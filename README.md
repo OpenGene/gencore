@@ -1,17 +1,17 @@
-A tool to GENerate COnsensus REads
+A tool to GENerate COnsensus REads.
 * [What's gencore](#whats-gencore)
 * [A quick example](#a-quick-example)
-* [download, compile and install](#get-gencore)
+* [Download, compile and install](#get-gencore)
 * [Why to use gencore](#why-to-use-gencore)
 * [UMI format](#umi-format)
 * [All options](#all-options)
 
 # What's gencore?
-`gencore` is a tool to generate consensus reads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which is usually very clean and accurate.
+`gencore` is a tool to generate consensus reads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which contains much less errors than the original reads.
 
 This tool groups the reads of same origin by their mapping positions and unique molecular identifiers (UMI). It can run with or without UMI. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
 
-This tool can be very useful to eliminate the errors introduced by library preparation and sequencing processes, and consenquently it can greatly reduce the false positives for downstream variant calling. This tool can also be used to remove duplicated reads. Since it generates consensus reads from duplicated reads, it outputs much cleaner data than conventional duplication remover.
+This tool can eliminate the errors introduced by library preparation and sequencing processes, and consenquently reduce the false positives for downstream variant calling. This tool can also be used to remove duplicated reads. Since it generates consensus reads from duplicated reads, it outputs much cleaner data than conventional duplication remover. ***Due to these advantages, it is especially useful for processing ultra-deep sequencing data for cancer samples.***
 
 `gencore` accepts a sorted BAM/SAM with its corresponding reference fasta as input, and outputs an unsorted BAM/SAM.
 
@@ -47,12 +47,12 @@ As described above, gencore can eliminate the errors introduced by library prepa
 
 ## original BAM
 ![image](http://www.opengene.org/gencore/original.png)  
-This is an image showing a pileup of the original BAM. A lot of sequencing errors can be observed.
+***This is an image showing a pileup of the original BAM. A lot of sequencing errors can be observed.***
 
 
 ## gencore processed BAM
 ![image](http://www.opengene.org/gencore/gencore.png)  
-This is the image showing the result of gencore processed BAM. It becomes much cleaner. Cheers!
+***This is the image showing the result of gencore processed BAM. It becomes much cleaner. Cheers!***
 
 # UMI format
 `gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
