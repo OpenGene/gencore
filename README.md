@@ -1,5 +1,5 @@
 # gencore
-A tool to generate consensus reads
+A tool to generate consensus reads from paired-end data. This tool input a sorted BAM/SAM with its corresponding reference fasta, and output an unsorted BAM/SAM.
 
 # Get gencore
 ## download binary 
@@ -12,19 +12,30 @@ chmod a+x ./gencore
 ## or compile from source
 ```shell
 # step 1: download and compile htslib from: https://github.com/samtools/htslib
-# step 2: get source (you can also use browser to download from master or releases)
+# step 2: get gencore source (you can also use browser to download from master or releases)
 git clone https://github.com/OpenGene/gencore.git
 
 # step 3: build
-cd mutscan
+cd gencore
 make
 
 # step 4: install
 sudo make install
 ```
 
+# Unique molecular indentifier (UMI) format
+`gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended.   
+
+The UMI should in the tail of query names. It can have a prefix like `UMI`, followed by an underscore. If the UMI has a prefix, it should be specified by `--umi_prefix` or `-u`. It can also have two parts, which are connected by an underscore.   
+
+## Some valid UMI examples:
+* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGCATAC`, prefix = `UMI`, umi = `GAGCATAC`
+* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGC_ATAC`, prefix = `UMI`, umi = `GAGC_ATAC`
+* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGCATAC`, prefix = ``, umi = `GAGCATAC`
+* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC`, prefix = ``, umi = `GAGC_ATAC`
+
 # Usage
-```shell
+```
 options:
   -i, --in                   input sorted bam/sam file. STDIN will be read from if it's not specified (string [=-])
   -o, --out                  output bam/sam file. STDOUT will be written to if it's not specified (string [=-])
