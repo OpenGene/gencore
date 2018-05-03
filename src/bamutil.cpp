@@ -1,6 +1,7 @@
 #include "bamutil.h"
 #include <sstream>
 #include <vector>
+#include <memory.h>
 
 BamUtil::BamUtil(){
 }
