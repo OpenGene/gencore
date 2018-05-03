@@ -1,7 +1,13 @@
-# gencore
-A tool to generate consensus reads from paired-end data. This tool accepts input of a sorted BAM/SAM with its corresponding reference fasta, and outputs an unsorted BAM/SAM.
+# What's gencore?
+`gencore` is a tool to GENerate COnsensus REads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which is usually very clean and accurate.
 
-# Example
+This tool groups the reads of same origin by their mapping positions and unique molecular identifiers (UMI). It can run with or without UMI. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
+
+This tool can be very useful to eliminate the errors introduced by library preparation and sequencing processes, and consenquently it can greatly reduce the false positives for downstream variant calling. This tool can also be used to remove duplicated reads. Since it generates consensus reads from duplicated reads, it outputs much cleaner data than conventional duplication remover.
+
+`gencore` accepts a sorted BAM/SAM with its corresponding reference fasta as input, and outputs an unsorted BAM/SAM.
+
+# An quick example
 ```shell
 gencore -i input.sorted.bam -o output.bam -r hg19.fasta
 ```
@@ -28,18 +34,30 @@ make
 sudo make install
 ```
 
-# Unique molecular indentifier (UMI) format
-`gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended.   
+# Why to use gencore?
+As described above, gencore can eliminate the errors introduced by library preparation and sequencing processes, and consenquently it can greatly reduce the false positives for downstream variant calling. Let me show your an example.
+
+## original BAM
+![image](http://www.opengene.org/gencore/original.png)  
+This is an image showing a pileup of the original BAM. A lot of sequencing errors can be observed.
+
+
+## gencore processed BAM
+![image](http://www.opengene.org/gencore/gencore.png)  
+This is the image showing the result of gencore processed BAM. It becomes much cleaner. Cheers!
+
+# UMI format
+`gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
 
 The UMI should in the tail of query names. It can have a prefix like `UMI`, followed by an underscore. If the UMI has a prefix, it should be specified by `--umi_prefix` or `-u`. It can also have two parts, which are connected by an underscore.   
 
-## Some valid UMI examples:
-* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGCATAC`, prefix = `UMI`, umi = `GAGCATAC`
-* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGC_ATAC`, prefix = `UMI`, umi = `GAGC_ATAC`
-* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGCATAC`, prefix = ``, umi = `GAGCATAC`
-* Read query name = `NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC`, prefix = ``, umi = `GAGC_ATAC`
+## UMI examples
+* Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGCATAC"`, prefix = `"UMI"`, umi = `"GAGCATAC"`
+* Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGC_ATAC"`, prefix = `"UMI"`, umi = `"GAGC_ATAC"`
+* Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGCATAC"`, prefix = `""`, umi = `"GAGCATAC"`
+* Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC"`, prefix = `""`, umi = `"GAGC_ATAC"`
 
-# Usage
+# All options
 ```
 options:
   -i, --in                   input sorted bam/sam file. STDIN will be read from if it's not specified (string [=-])
