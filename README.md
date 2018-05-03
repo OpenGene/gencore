@@ -1,5 +1,13 @@
+A tool to GENerate COnsensus REads
+* [What's gencore](#whats-gencore)
+* [A quick example](#a-quick-example)
+* [download, compile and install](#get-gencore)
+* [Why to use gencore](#why-to-use-gencore)
+* [UMI format](#umi-format)
+* [All options](#all-options)
+
 # What's gencore?
-`gencore` is a tool to GENerate COnsensus REads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which is usually very clean and accurate.
+`gencore` is a tool to generate consensus reads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which is usually very clean and accurate.
 
 This tool groups the reads of same origin by their mapping positions and unique molecular identifiers (UMI). It can run with or without UMI. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
 
@@ -7,7 +15,7 @@ This tool can be very useful to eliminate the errors introduced by library prepa
 
 `gencore` accepts a sorted BAM/SAM with its corresponding reference fasta as input, and outputs an unsorted BAM/SAM.
 
-# An quick example
+# A quick example
 ```shell
 gencore -i input.sorted.bam -o output.bam -r hg19.fasta
 ```
