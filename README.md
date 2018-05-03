@@ -1,0 +1,2 @@
+# gencore
+generate consensus reads
