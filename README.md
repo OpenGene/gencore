@@ -1,2 +1,2 @@
 # gencore
-generate consensus reads
+A tool to generate consensus reads
