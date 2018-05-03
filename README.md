@@ -1,5 +1,10 @@
 # gencore
-A tool to generate consensus reads from paired-end data. This tool input a sorted BAM/SAM with its corresponding reference fasta, and output an unsorted BAM/SAM.
+A tool to generate consensus reads from paired-end data. This tool accepts input of a sorted BAM/SAM with its corresponding reference fasta, and outputs an unsorted BAM/SAM.
+
+# Example
+```shell
+gencore -i input.sorted.bam -o output.bam -r hg19.fasta
+```
 
 # Get gencore
 ## download binary 
