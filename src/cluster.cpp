@@ -312,8 +312,8 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft) {
     const char* refdata = NULL;
     if(out->core.isize != 0) {
         refdata = Reference::instance(mOptions)->getData(out->core.tid, out->core.pos, BamUtil::getRefOffset(out, len-1) + 1);
-        if(refdata == NULL)
-            cerr << "ref data is NULL" << endl;
+        if(refdata == NULL && mOptions->debug)
+            cerr << "ref data is NULL for " << out->core.tid << ":" << out->core.pos << endl;
     }
     // loop all the position of out
     for(int i=0; i<len; i++) {
