@@ -116,8 +116,20 @@ void Gencore::consensus(){
                 exit(-1);
             }
         }
+        if(mOptions->debug && b->core.tid > lastTid) {
+            cerr << "Starting contig " << b->core.tid << endl;
+        }
         lastTid = b->core.tid;
         lastPos = b->core.pos;
+
+        // unmapped reads, we just write it and continue
+        if(b->core.tid < 0 || b->core.pos < 0) {
+            if(sam_write1(mOutSam, mBamHeader, b) <0) {
+                cerr << "Writing failed, exiting..." << endl;
+                exit(-1);
+            }
+            continue;
+        }
 
         addToCluster(b);
         // for testing, we only process chr1
