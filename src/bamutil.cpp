@@ -286,6 +286,23 @@ void BamUtil::copyQName(bam1_t *from, bam1_t *to) {
     }
 }
 
+bool BamUtil::isPrimary(bam1_t *b) {
+    if(b->core.flag & BAM_FSECONDARY || b->core.flag & BAM_FSUPPLEMENTARY)
+        return false;
+    else
+        return true;
+}
+
+bool BamUtil::isProperPair(bam1_t *b) {
+    return b->core.flag & BAM_FPROPER_PAIR;
+}
+
+int BamUtil::getRightRefPos(bam1_t *b) {
+    if(b->core.pos<0)
+        return -1;
+    return b->core.pos + bam_cigar2rlen(b->core.n_cigar, bam_get_cigar(b));
+}
+
 bool BamUtil::test() {
     vector<string> qnames;
     qnames.push_back("NB551106:8:H5Y57BGX2:1:13304:3538:1404");

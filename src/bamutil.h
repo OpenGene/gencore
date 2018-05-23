@@ -27,6 +27,9 @@ public:
     static void dumpHeader(bam_hdr_t* hdr);
     static int getRefOffset(bam1_t *b, int bampos);
     static void copyQName(bam1_t *from, bam1_t *to);
+    static bool isPrimary(bam1_t *b);
+    static bool isProperPair(bam1_t *b);
+    static int getRightRefPos(bam1_t *b);
 
     static bool test();
 

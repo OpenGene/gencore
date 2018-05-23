@@ -131,6 +131,11 @@ void Gencore::consensus(){
             continue;
         }
 
+        // for secondary alignments, we just skip it
+        if(!BamUtil::isPrimary(b)) {
+            continue;
+        }
+
         addToCluster(b);
         // for testing, we only process chr1
         if(mOptions->maxContig>0 && b->core.tid>=mOptions->maxContig){
@@ -150,6 +155,12 @@ void Gencore::consensus(){
 void Gencore::addToProperCluster(bam1_t* b) {
     int tid = b->core.tid;
     int tlen = b->core.isize;
+
+    // add a WAR fix for some unproperly mapped pairs
+    /*if(abs(b->core.isize) > 10000) {
+        tlen = b->core.mpos - b->core.pos;
+    }*/
+
     int left = b->core.pos;
     if(tlen < 0)
         left = b->core.mpos;

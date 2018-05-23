@@ -160,6 +160,13 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
             if(whole == NULL)
                 continue;
 
+            // if processing right reads, we should align by the right ref pos
+            if(!isLeft) {
+                if(BamUtil::getRightRefPos(part) != BamUtil::getRightRefPos(whole)) {
+                    continue;
+                }
+            }
+
             if( BamUtil::isPartOf(part, whole, leftReadMode))
                 containedBy++;
         }
