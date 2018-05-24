@@ -116,6 +116,12 @@ void Gencore::consensus(){
                 exit(-1);
             }
         }
+        // for testing, we only process chr1
+        if(mOptions->maxContig>0 && b->core.tid>=mOptions->maxContig){
+            b = bam_init1();
+            break;
+        }
+        // if debug flag is enabled, show which contig we are start to process
         if(mOptions->debug && b->core.tid > lastTid) {
             cerr << "Starting contig " << b->core.tid << endl;
         }
@@ -137,11 +143,6 @@ void Gencore::consensus(){
         }
 
         addToCluster(b);
-        // for testing, we only process chr1
-        if(mOptions->maxContig>0 && b->core.tid>=mOptions->maxContig){
-            b = bam_init1();
-            break;
-        }
         b = bam_init1();
     }
 
