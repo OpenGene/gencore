@@ -29,7 +29,11 @@ void Pair::setLeft(bam1_t *b) {
 
 void Pair::setRight(bam1_t *b) {
     mRight = b;
-    mUMI = BamUtil::getUMI(mRight, mOptions->umiPrefix);
+    string umi = BamUtil::getUMI(mRight, mOptions->umiPrefix);
+    if(!mUMI.empty() && umi!=mUMI)
+        error_exit("The UMI of a read pair should be identical, but we got " + mUMI + " and " + umi );
+    else
+        mUMI = umi;
     mRightCigar = BamUtil::getCigar(mRight);
 }
 

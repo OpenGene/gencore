@@ -31,6 +31,64 @@ bool Cluster::matches(Pair* p){
     }
     return false;
 }
+
+int Cluster::umiDiff(const string& umi1, const string& umi2) {
+
+    int len1 = umi1.length();
+    int len2 = umi2.length();
+
+    int  diff = abs(len1 - len2);
+    for(int i=0; i<min(len1, len2); i++) {
+        if(umi1[i] != umi2[i])
+             diff++;
+    }
+
+    if( diff == 0)
+        return 0;
+
+    int underline1 = -1;
+    int underline2 = -1;
+
+    for(int i=0; i<len1; i++) {
+        if(umi1[i] == '_') {
+            underline1 = i;
+            break;
+        }
+    }
+
+    if(underline1 <= 0)
+        return  diff;
+
+    for(int i=0; i<len2; i++) {
+        if(umi2[i] == '_') {
+            underline2 = i;
+            break;
+        }
+    }
+
+    if(underline2 <= 0)
+        return  diff;
+
+    int len11 = underline1;
+    int len12 = len1 - underline1 - 1;
+    int len21 = underline2;
+    int len22 = len2 - underline2 - 1;
+
+    // reversed
+    int d1 = abs(len11 - len22);
+    for(int i=0; i<min(len11, len22); i++) {
+        if(umi1[i] != umi2[underline2 + i + 1])
+            d1++;
+    }
+    int d2 = abs(len12 - len21);
+    for(int i=0; i<min(len12, len21); i++) {
+        if(umi1[underline1 + i + 1] != umi2[i])
+            d2++;
+    }
+    int revDiff = d1 + d2;
+
+    return min(diff, revDiff);
+}
     
 vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
 	vector<Cluster*> subClusters;
@@ -58,7 +116,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
         for(piter = mPairs.begin(); piter!=mPairs.end();){
     		Pair* p = *piter;
             string umi = p->getUMI();
-            if(hamming(umi, topUMI) <= umiDiffThreshold) {
+            if(umiDiff(umi, topUMI) <= umiDiffThreshold) {
                 c->addPair(p);
                 piter = mPairs.erase(piter);
                 umiCount[umi] = 0;
@@ -550,4 +608,16 @@ void Cluster::addRead(bam1_t* b) {
             p->setLeft(b);
         mPairs.push_back(p);
     }
+}
+
+bool Cluster::test(){
+    bool passed = true;
+    passed &= umiDiff("ATCGATCG", "ATCGATCG") == 0;
+    passed &= umiDiff("ATCGATCG", "ATCGTTC") == 2;
+    passed &= umiDiff("ATCGATCG", "ATCGTTCG") == 1;
+    passed &= umiDiff("AAAA_ATCG", "AAAA_ATCG") == 0;
+    passed &= umiDiff("AAAA_ATCG", "ATCG_AAAA") == 0;
+    passed &= umiDiff("AAAA_ATCG", "ATCG_AAA") == 1;
+    passed &= umiDiff("AAAA_ATCG", "ATCG_AACA") == 1;
+    return passed;
 }

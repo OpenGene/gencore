@@ -35,6 +35,11 @@ public:
     int getTLEN(){return mPairs[0]->getTLEN();}
     Pair::MapType getMapType(){return mPairs[0]->getMapType();}
     string getUMI(){return mPairs[0]->getUMI();}
+
+    static bool test();
+
+private:
+    static int umiDiff(const string& umi1, const string& umi2);
     
 public:
     vector<Pair*> mPairs;
