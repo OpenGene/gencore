@@ -445,9 +445,12 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         bool needToCheckRef = false;
 
         // if the secondary base is not a valid candidate and the top base is valid
-        if(secScore < mOptions->scoreOfNotOverlapped && topScore >= mOptions->scoreOfNotOverlapped) {
-            outqual[i] = topQual;
-            continue;
+        if(secScore < mOptions->scoreOfNotOverlapped) {
+            if(topScore >= mOptions->scoreOfNotOverlapped) {
+                outqual[i] = topQual;
+                continue;
+            } else
+                needToCheckRef = true;
         }
 
         char refbase = 0;

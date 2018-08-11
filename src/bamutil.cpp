@@ -115,7 +115,7 @@ char BamUtil::fourbits2base(uint8_t val) {
             return 'N';
         default:
             cerr << "ERROR: Wrong base with value "<< (int)val << endl ;
-            exit(-1);
+            return 'N';
     }
 }
 
@@ -133,7 +133,7 @@ uint8_t BamUtil::base2fourbits(char base) {
             return 15;
         default:
             cerr << "ERROR: Wrong base "<< base << endl ;
-            exit(-1);
+            return 15;
     }
 }
 
