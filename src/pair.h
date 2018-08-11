@@ -22,6 +22,9 @@ public:
     int getRightPos();
     int getTLEN();
 
+    char* getLeftScore();
+    char* getRightScore();
+
     void setLeft(bam1_t *b);
     void setRight(bam1_t *b);
     bool pairFound();
@@ -34,6 +37,9 @@ public:
     bool isDupWith(Pair* other);
     
     void dump();
+
+private:
+    void computeScore();
 
 public:
     bam1_t *mLeft;
@@ -49,6 +55,8 @@ private:
     string mLeftCigar;
     string mRightCigar;
     Options* mOptions;
+    char* mLeftScore;
+    char* mRightScore;
 };
 
 #endif

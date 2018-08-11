@@ -25,7 +25,7 @@ public:
     vector<Pair*> clusterByUMI(int umiDiffThreshold = 1);
     Pair* consensusMerge();
     bam1_t* consensusMergeBam(bool isLeft, int& diff);
-    int makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft);
+    int makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& scores, bool isLeft);
 
 
     int getLeftRef(){return mPairs[0]->getLeftRef();}

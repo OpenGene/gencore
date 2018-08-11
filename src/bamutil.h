@@ -30,6 +30,7 @@ public:
     static bool isPrimary(bam1_t *b);
     static bool isProperPair(bam1_t *b);
     static int getRightRefPos(bam1_t *b);
+    static void getMOffsetAndLen(bam1_t *b, int& MOffset, int& MLen);
 
     static bool test();
 

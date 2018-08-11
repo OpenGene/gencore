@@ -1,9 +1,12 @@
 #include "pair.h"
 #include "bamutil.h"
+#include <memory.h>
 
 Pair::Pair(Options* opt){
     mLeft = NULL;
     mRight = NULL;
+    mLeftScore = NULL;
+    mRightScore = NULL;
     mMergeReads = 1;
     mMergeLeftDiff = 0;
     mMergeRightDiff = 0;
@@ -19,6 +22,125 @@ Pair::~Pair(){
         bam_destroy1(mRight);
         mRight = NULL;
     }
+    if(mLeftScore) {
+        delete[] mLeftScore;
+        mLeftScore = NULL;
+    }
+    if(mLeftScore) {
+        delete[] mRightScore;
+        mRightScore = NULL;
+    }
+}
+
+void Pair::computeScore() {
+    if(mLeft) {
+        if(mLeftScore == NULL) {
+            mLeftScore = new char[mLeft->core.l_qseq];
+            memset(mLeftScore, 1, mLeft->core.l_qseq);
+        }
+    }
+
+    if(mRight) {
+        if(mRightScore == NULL) {
+            mRightScore = new char[mRight->core.l_qseq];
+            memset(mRightScore, 1, mRight->core.l_qseq);
+        }
+    }
+
+    if(mLeftScore && mRightScore) {
+        int leftMOffset, leftMLen, rightMOffset, rightMLen;
+        BamUtil::getMOffsetAndLen(mLeft, leftMOffset, leftMLen);
+        BamUtil::getMOffsetAndLen(mRight, rightMOffset, rightMLen);
+        if(leftMLen>0 && rightMLen>0) {
+            int posDis = mRight->core.pos - mLeft->core.pos;
+
+            int leftStart, rightStart, cmpLen;
+            if(posDis >=0 ) {
+                leftStart = leftMOffset + posDis;
+                rightStart = rightMOffset;
+                cmpLen = min(leftMLen - posDis, rightMLen);
+            } else {
+                leftStart = leftMOffset;
+                rightStart = rightMOffset - posDis;
+                cmpLen = min(leftMLen, rightMLen + posDis);
+            }
+            uint8_t* lseq = bam_get_seq(mLeft);
+            uint8_t* rseq = bam_get_seq(mRight);
+            uint8_t* lqual = bam_get_qual(mLeft);
+            uint8_t* rqual = bam_get_qual(mRight);
+            for(int i=0; i<cmpLen; i++) {
+                int l = leftStart + i;
+                int r = rightStart + i;
+                uint8_t lbase, rbase;
+                uint8_t lq = lqual[l];
+                uint8_t rq = rqual[r];
+
+                if(l%2 == 1)
+                    lbase = lseq[l/2] & 0xF;
+                else
+                    lbase = (lseq[l/2]>>4) & 0xF;
+                if(r%2 == 1)
+                    rbase = rseq[r/2] & 0xF;
+                else
+                    rbase = (rseq[r/2]>>4) & 0xF;
+
+                if(lbase == rbase) {
+                    if(lq + rq >=50) {
+                        mLeftScore[l] = mOptions->scoreOfHighQualityMatch;
+                        mRightScore[r] = mOptions->scoreOfHighQualityMatch;
+                    } else {
+                        mLeftScore[l] = mOptions->scoreOfLowQualityMatch;
+                        mRightScore[r] = mOptions->scoreOfLowQualityMatch;
+                    }
+                    continue;
+                }
+
+                if(lq >= 30 && rq >= 30) {
+                    mLeftScore[l] = mOptions->scoreOfBothHighQualityMismatch;
+                    mRightScore[r] = mOptions->scoreOfBothHighQualityMismatch;
+                    continue;
+                }
+
+                if(lq <= 15 && rq <= 15) {
+                    mLeftScore[l] = mOptions->scoreOfBothLowQualityMismatch;
+                    mRightScore[r] = mOptions->scoreOfBothLowQualityMismatch;
+                    continue;
+                }
+
+                if(lq > 15 && lq < 30 && rq > 15 && rq < 30) {
+                    mLeftScore[l] = mOptions->scoreOfBothModerateQualityMismatch;
+                    mRightScore[r] = mOptions->scoreOfBothModerateQualityMismatch;
+                    continue;
+                }
+
+                if(lq >= 30 && rq <= 15) {
+                    mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchHighQuality;
+                    mRightScore[r] = mOptions->scoreOfUnbalancedMismatchLowQuality;
+                    continue;
+                }
+
+                if(lq <= 15 && rq >= 30) {
+                    mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchLowQuality;
+                    mRightScore[r] = mOptions->scoreOfUnbalancedMismatchHighQuality;
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+char* Pair::getLeftScore() {
+    if(!mLeftScore)
+        computeScore();
+    
+    return mLeftScore;
+}
+
+char* Pair::getRightScore() {
+    if(!mRightScore)
+        computeScore();
+
+    return mRightScore;
 }
 
 void Pair::setLeft(bam1_t *b) {

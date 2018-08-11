@@ -12,6 +12,14 @@ Options::Options(){
     properReadsUmiDiffThreshold = 2;
     unproperReadsUmiDiffThreshold = 0;
     debug = false;
+
+    scoreOfHighQualityMatch = 3;
+    scoreOfLowQualityMatch = 2;
+    scoreOfBothHighQualityMismatch = 0;
+    scoreOfBothModerateQualityMismatch = -1;
+    scoreOfBothLowQualityMismatch = -2;
+    scoreOfUnbalancedMismatchHighQuality = 1;
+    scoreOfUnbalancedMismatchLowQuality = -3;
 }
 
 bool Options::validate() {

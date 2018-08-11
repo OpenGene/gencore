@@ -268,6 +268,28 @@ int BamUtil::getRefOffset(bam1_t *b, int bampos) {
     return -1;
 }
 
+void BamUtil::getMOffsetAndLen(bam1_t *b, int& MOffset, int& MLen) {
+    uint32_t *data = (uint32_t *)bam_get_cigar(b);
+    int cigarNum = b->core.n_cigar;
+    int ref = 0;
+    int query = 0;
+    for(int i=0; i<cigarNum; i++) {
+        uint32_t val = data[i];
+        char op = bam_cigar_op(val);
+        uint32_t len = bam_cigar_oplen(val);
+        if(op == BAM_CMATCH) {
+            MOffset = query;
+            MLen = len;
+            return ;
+        }
+        query += len * QUERY_CONSUM[op];
+        ref += len * REFERENCE_CONSUM[op];
+    }
+    // not found
+    MOffset = 0;
+    MLen = 0;
+}
+
 void BamUtil::copyQName(bam1_t *from, bam1_t *to) {
     char* fromdata = bam_get_qname(from);
     char* todata = bam_get_qname(to);

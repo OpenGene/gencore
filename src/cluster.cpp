@@ -265,34 +265,46 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
         return NULL;
 
     bam1_t* out = NULL;
+    char* outScore = NULL;
     if(isLeft) {
         out = mPairs[mostContainedById]->mLeft;
+        outScore = mPairs[mostContainedById]->getLeftScore();
         // make it null so that it will not be deleted
         mPairs[mostContainedById]->mLeft = NULL;
     }
     else {
         out = mPairs[mostContainedById]->mRight;
+        outScore = mPairs[mostContainedById]->getRightScore();
         // make it null so that it will not be deleted
         mPairs[mostContainedById]->mRight = NULL;
     }
 
     vector<bam1_t *> reads;
+    vector<char *> scores;
 
     reads.push_back(out);
+    scores.push_back(outScore);
 
     for(int j=0; j<mPairs.size(); j++) {
         if(mostContainedById == j)
             continue;
         bam1_t* read = NULL;
-        if(isLeft)
+        char* score = NULL;
+        if(isLeft) {
             read = mPairs[j]->mLeft;
-        else
+            score = mPairs[j]->getLeftScore();
+        }
+        else {
             read = mPairs[j]->mRight;
-        if(read == NULL)
+            score = mPairs[j]->getRightScore();
+        }
+        if(read == NULL || score == NULL)
             continue;
 
-        if( BamUtil::isPartOf(out, read, leftReadMode))
+        if( BamUtil::isPartOf(out, read, leftReadMode)) {
             reads.push_back(read);
+            scores.push_back(score);
+        }
     }
 
     if(reads.size() < mOptions->clusterSizeReq) {
@@ -327,12 +339,12 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
         }
     }*/
 
-    diff = makeConsensus(reads, out, leftReadMode);
+    diff = makeConsensus(reads, out, scores, leftReadMode);
 
     return out;
 }
 
-int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft) {
+int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& scores, bool isLeft) {
     if(reads.size() <= 1 || out == NULL)
         return 0;
 
@@ -383,6 +395,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft) {
     // loop all the position of out
     for(int i=0; i<len; i++) {
         int counts[16]={0};
+        int baseScores[16]={0};
         int quals[16]={0};
         int totalqual = 0;
         uint8_t topQual = 0;
@@ -397,6 +410,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft) {
             else
                 base = (alldata[r][readpos/2]>>4) & 0xF;
             counts[base]++;
+            baseScores[base] += scores[r][readpos];
             quals[base] += qual;
             totalqual += qual;
             if(qual > topQual)
@@ -404,30 +418,32 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft) {
         }
         // get the best representive base at this position
         uint8_t topBase=0;
-        int topNum = 0;
+        int topScore = 0;
         for(uint8_t b=0; b<16; b++) {
-            if(counts[b] > topNum || (counts[b] == topNum && quals[b] > quals[topBase])) {
-                topNum = counts[b];
+            if(baseScores[b] > topScore || (baseScores[b] == topScore && quals[b] > quals[topBase])) {
+                topScore = baseScores[b];
                 topBase = b;
             }
         }
+        int topNum = counts[topBase];
 
         // get the secondary representive base at this position
         uint8_t secBase=0;
-        int secNum = 0;
+        int secScore = 0;
         for(uint8_t b=0; b<16; b++) {
             if(b == topBase)
                 continue;
-            if(counts[b] > secNum || (counts[b] == secNum && quals[b] > quals[secBase])) {
-                secNum = counts[b];
+            if(baseScores[b] > secScore || (baseScores[b] == secScore && quals[b] > quals[secBase])) {
+                secScore = baseScores[b];
                 secBase = b;
             }
         }
+        int secNum = counts[secBase];
 
         bool needToCheckRef = false;
 
         // completely consistent with good quality
-        if(secNum == 0 && topQual >= 20) {
+        if(secScore <= 0 && topQual >= 20) {
             outqual[i] = topQual;
             continue;
         }
@@ -444,14 +460,14 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, bool isLeft) {
             // low quality secondary
             if(quals[secBase] < 15) {
                 // the candidate is less than 3 consistent bases and no high quality bases
-                if(topNum < 2 && topQual < 30) {
+                if(topScore < 2 && topQual < 30) {
                     needToCheckRef = true;
                 }
             }
             // high quality secondary
             else {
                 // the candidate is less than 3 consistent bases or no high quality bases
-                if(topNum < 3 || topQual < 30) {
+                if(topScore < 3 || topQual < 30) {
                     needToCheckRef = true;
                 }
             }

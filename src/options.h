@@ -27,6 +27,15 @@ public:
     int unproperReadsUmiDiffThreshold;
     bam_hdr_t* bamHeader;
     bool debug;
+
+    // scores for PE consistence check
+    char scoreOfHighQualityMatch;
+    char scoreOfLowQualityMatch;
+    char scoreOfBothHighQualityMismatch;
+    char scoreOfBothModerateQualityMismatch;
+    char scoreOfBothLowQualityMismatch;
+    char scoreOfUnbalancedMismatchHighQuality;
+    char scoreOfUnbalancedMismatchLowQuality;
 };
 
 #endif
