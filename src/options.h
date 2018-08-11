@@ -21,14 +21,21 @@ public:
     string output;
     string refFile;
     string umiPrefix;
-    int clusterSizeReq;
     int maxContig;
-    int properReadsUmiDiffThreshold;
-    int unproperReadsUmiDiffThreshold;
     bam_hdr_t* bamHeader;
     bool debug;
 
+    // thresholds
+    int properReadsUmiDiffThreshold;
+    int unproperReadsUmiDiffThreshold;
+    int clusterSizeReq;
+    double scorePercentReq;
+    // config of quality
+    int highQuality;
+    int moderateQuality;
+    int lowQuality;
     // scores for PE consistence check
+    char scoreOfNotOverlapped;
     char scoreOfHighQualityMatch;
     char scoreOfLowQualityMatch;
     char scoreOfBothHighQualityMismatch;

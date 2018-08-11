@@ -398,6 +398,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         int baseScores[16]={0};
         int quals[16]={0};
         int totalqual = 0;
+        int totalScore = 0;
         uint8_t topQual = 0;
         for(int r=0; r<reads.size(); r++) {
             int readpos = i;
@@ -411,6 +412,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
                 base = (alldata[r][readpos/2]>>4) & 0xF;
             counts[base]++;
             baseScores[base] += scores[r][readpos];
+            totalScore += scores[r][readpos];
             quals[base] += qual;
             totalqual += qual;
             if(qual > topQual)
@@ -418,7 +420,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         }
         // get the best representive base at this position
         uint8_t topBase=0;
-        int topScore = 0;
+        int topScore = -0x7FFFFFFF;
         for(uint8_t b=0; b<16; b++) {
             if(baseScores[b] > topScore || (baseScores[b] == topScore && quals[b] > quals[topBase])) {
                 topScore = baseScores[b];
@@ -429,7 +431,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
 
         // get the secondary representive base at this position
         uint8_t secBase=0;
-        int secScore = 0;
+        int secScore = -0x7FFFFFFF;
         for(uint8_t b=0; b<16; b++) {
             if(b == topBase)
                 continue;
@@ -442,8 +444,8 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
 
         bool needToCheckRef = false;
 
-        // completely consistent with good quality
-        if(secScore <= 0 && topQual >= 20) {
+        // if the secondary base is not a valid candidate and the top base is valid
+        if(secScore < mOptions->scoreOfNotOverlapped && topScore >= mOptions->scoreOfNotOverlapped) {
             outqual[i] = topQual;
             continue;
         }
@@ -458,16 +460,16 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         // the secondary base is a single base
         if(secNum ==1){
             // low quality secondary
-            if(quals[secBase] < 15) {
-                // the candidate is less than 3 consistent bases and no high quality bases
-                if(topScore < 2 && topQual < 30) {
+            if(quals[secBase] <= mOptions->lowQuality) {
+                // the candidate is less than 2 consistent bases and no high quality bases
+                if(topNum < 2 && topQual < mOptions->highQuality) {
                     needToCheckRef = true;
                 }
             }
             // high quality secondary
             else {
                 // the candidate is less than 3 consistent bases or no high quality bases
-                if(topScore < 3 || topQual < 30) {
+                if(topNum < 3 || topQual < mOptions->highQuality) {
                     needToCheckRef = true;
                 }
             }
@@ -476,7 +478,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         // more than one secondary bases
         if(secNum >1) {
             // the candidate is less than 80% consistent bases or no high quality
-            if ((double)topNum < 0.8 * reads.size() || topQual < 30)
+            if ((double)topScore < mOptions->scorePercentReq * totalScore || topQual < mOptions->highQuality)
                 needToCheckRef = true;
         }
 
@@ -501,14 +503,15 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
                     if(qual > refBaseQual)
                         refBaseQual = qual;
                     // if quality is high, use it for output
-                    if(qual >= 30)
+                    if(qual >= mOptions->highQuality)
                         topBase = refbase4bit;
                 }
             }
-            // if there is no Q20 quality alternative, just use the reference base to reduce noise
-            if(topQual < 20)
+            // if there is no alternative with moderate quality, just use the reference base to reduce noise
+            if(topQual < mOptions->moderateQuality)
                 topBase = refbase4bit;
             // if there is actually no ref base, the refBaseQual will have 0 quality
+            // so that it will be masked for downstream processing
             if(topBase == refbase4bit)
                 topQual = refBaseQual;
         }

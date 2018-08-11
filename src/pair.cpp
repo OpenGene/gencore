@@ -36,14 +36,14 @@ void Pair::computeScore() {
     if(mLeft) {
         if(mLeftScore == NULL) {
             mLeftScore = new char[mLeft->core.l_qseq];
-            memset(mLeftScore, 1, mLeft->core.l_qseq);
+            memset(mLeftScore, mOptions->scoreOfNotOverlapped, mLeft->core.l_qseq);
         }
     }
 
     if(mRight) {
         if(mRightScore == NULL) {
             mRightScore = new char[mRight->core.l_qseq];
-            memset(mRightScore, 1, mRight->core.l_qseq);
+            memset(mRightScore, mOptions->scoreOfNotOverlapped, mRight->core.l_qseq);
         }
     }
 
@@ -85,7 +85,7 @@ void Pair::computeScore() {
                     rbase = (rseq[r/2]>>4) & 0xF;
 
                 if(lbase == rbase) {
-                    if(lq + rq >=50) {
+                    if(lq + rq >= mOptions->moderateQuality * 2) {
                         mLeftScore[l] = mOptions->scoreOfHighQualityMatch;
                         mRightScore[r] = mOptions->scoreOfHighQualityMatch;
                     } else {
@@ -95,31 +95,31 @@ void Pair::computeScore() {
                     continue;
                 }
 
-                if(lq >= 30 && rq >= 30) {
+                if(lq >= mOptions->highQuality && rq >= mOptions->highQuality) {
                     mLeftScore[l] = mOptions->scoreOfBothHighQualityMismatch;
                     mRightScore[r] = mOptions->scoreOfBothHighQualityMismatch;
                     continue;
                 }
 
-                if(lq <= 15 && rq <= 15) {
+                if(lq <= mOptions->lowQuality && rq <= mOptions->lowQuality) {
                     mLeftScore[l] = mOptions->scoreOfBothLowQualityMismatch;
                     mRightScore[r] = mOptions->scoreOfBothLowQualityMismatch;
                     continue;
                 }
 
-                if(lq > 15 && lq < 30 && rq > 15 && rq < 30) {
+                if(lq > mOptions->lowQuality && lq < mOptions->highQuality && rq > mOptions->lowQuality && rq < mOptions->highQuality) {
                     mLeftScore[l] = mOptions->scoreOfBothModerateQualityMismatch;
                     mRightScore[r] = mOptions->scoreOfBothModerateQualityMismatch;
                     continue;
                 }
 
-                if(lq >= 30 && rq <= 15) {
+                if(lq >= mOptions->highQuality && rq <= mOptions->lowQuality) {
                     mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchHighQuality;
                     mRightScore[r] = mOptions->scoreOfUnbalancedMismatchLowQuality;
                     continue;
                 }
 
-                if(lq <= 15 && rq >= 30) {
+                if(lq <= mOptions->lowQuality && rq >= mOptions->highQuality) {
                     mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchLowQuality;
                     mRightScore[r] = mOptions->scoreOfUnbalancedMismatchHighQuality;
                     continue;

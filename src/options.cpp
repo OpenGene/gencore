@@ -13,6 +13,13 @@ Options::Options(){
     unproperReadsUmiDiffThreshold = 0;
     debug = false;
 
+    scorePercentReq = 0.8;
+
+    highQuality = 30;
+    moderateQuality = 20;
+    lowQuality = 15;
+
+    scoreOfNotOverlapped = 1;
     scoreOfHighQualityMatch = 3;
     scoreOfLowQualityMatch = 2;
     scoreOfBothHighQualityMismatch = 0;
