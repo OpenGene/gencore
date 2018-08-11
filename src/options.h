@@ -29,6 +29,7 @@ public:
     int properReadsUmiDiffThreshold;
     int unproperReadsUmiDiffThreshold;
     int clusterSizeReq;
+    int baseScoreReq;
     double scorePercentReq;
     // config of quality
     int highQuality;

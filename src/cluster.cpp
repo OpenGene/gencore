@@ -446,7 +446,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
 
         // if the secondary base is not a valid candidate and the top base is valid
         if(secScore < mOptions->scoreOfNotOverlapped) {
-            if(topScore >= mOptions->scoreOfNotOverlapped) {
+            if(topScore >= mOptions->baseScoreReq) {
                 outqual[i] = topQual;
                 continue;
             } else
@@ -480,8 +480,8 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
 
         // more than one secondary bases
         if(secNum >1) {
-            // the candidate is less than 80% consistent bases or no high quality
-            if ((double)topScore < mOptions->scorePercentReq * totalScore || topQual < mOptions->highQuality)
+            // the candidate is less than 80% consistent bases or they are all bad quality
+            if ((double)topScore < mOptions->scorePercentReq * totalScore || topQual < mOptions->moderateQuality)
                 needToCheckRef = true;
         }
 
