@@ -566,8 +566,8 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
                 cerr << "Read name: " << BamUtil::getQName(out) << endl;
                 cerr << "tid: " << out->core.tid << ", pos: " << out->core.pos << endl;
                 if(refdata)
-                    cerr << "ref:" << string(refdata, len) << endl;
-                cerr << "css:" << BamUtil::getSeq(out) << endl;
+                    cerr << "ref:" << endl << string(refdata, len) << endl;
+                cerr << "css:" << endl << BamUtil::getSeq(out) << endl;
             }
 
             // restore the data
@@ -576,7 +576,10 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
 
             if(mOptions->debug) {
                 for(int r=0; r<reads.size(); r++) {
-                    cerr << reads[r]->core.tid << ":" << reads[r]->core.pos << ", " << reads[r]->core.mpos << ", " << reads[r]->core.isize  << " " << BamUtil::getCigar(reads[r])  << " " << BamUtil::getSeq(reads[r]) << endl;
+                    cerr << reads[r]->core.tid << ":" << reads[r]->core.pos << ", " << reads[r]->core.mpos << ", " << reads[r]->core.isize  << " " << BamUtil::getCigar(reads[r])  << endl << BamUtil::getSeq(reads[r]) << endl;
+                    for(int p=0; p<reads[r]->core.l_qseq; p++)
+                        cerr << (int)scores[r][p];
+                    cerr<<endl;
                 }
                 cerr << endl;
             }
