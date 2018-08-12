@@ -397,9 +397,9 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         int counts[16]={0};
         int baseScores[16]={0};
         int quals[16]={0};
+        uint8_t topQuals[16] = {0};
         int totalqual = 0;
         int totalScore = 0;
-        uint8_t topQual = 0;
         for(int r=0; r<reads.size(); r++) {
             int readpos = i;
             if(!isLeft)
@@ -415,8 +415,8 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
             totalScore += scores[r][readpos];
             quals[base] += qual;
             totalqual += qual;
-            if(qual > topQual)
-                topQual = qual;
+            if(qual > topQuals[base])
+                topQuals[base] = qual;
         }
         // get the best representive base at this position
         uint8_t topBase=0;
@@ -428,6 +428,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
             }
         }
         int topNum = counts[topBase];
+        uint8_t topQual = topQuals[topBase];
 
         // get the secondary representive base at this position
         uint8_t secBase=0;
