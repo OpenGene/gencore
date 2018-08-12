@@ -14,20 +14,21 @@ Options::Options(){
 
     scorePercentReq = 0.8;
     clusterSizeReq = 2;
-    baseScoreReq = 1;
 
     highQuality = 30;
     moderateQuality = 20;
     lowQuality = 15;
 
-    scoreOfNotOverlapped = 1;
-    scoreOfHighQualityMatch = 3;
-    scoreOfLowQualityMatch = 2;
-    scoreOfBothHighQualityMismatch = 0;
-    scoreOfBothModerateQualityMismatch = -1;
-    scoreOfBothLowQualityMismatch = -2;
-    scoreOfUnbalancedMismatchHighQuality = 1;
-    scoreOfUnbalancedMismatchLowQuality = -3;
+    scoreOfNotOverlapped = 6;
+    scoreOfHighQualityMatch = 8;
+    scoreOfLowQualityMatch = 7;
+    scoreOfBothHighQualityMismatch = 4;
+    scoreOfBothModerateQualityMismatch = 3;
+    scoreOfBothLowQualityMismatch = 2;
+    scoreOfUnbalancedMismatchHighQuality = 5;
+    scoreOfUnbalancedMismatchLowQuality = 1;
+
+    baseScoreReq = scoreOfNotOverlapped;
 }
 
 bool Options::validate() {

@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
     cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "");
     cmd.add<int>("supporting_reads", 's', "only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 2.", false, 2);
     cmd.add<double>("ratio_threshold", 'a', "if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8", false, 0.8);
-    cmd.add<int>("score_threshold", 'c', "if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~10, and the default value is 1", false, 1);
+    cmd.add<int>("score_threshold", 'c', "if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6", false, 6);
     cmd.add<int>("quit_after_contig", 0, "stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation.", false, 0);
     cmd.add("debug", 0, "output some debug information to STDERR.");
 

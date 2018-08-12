@@ -47,8 +47,6 @@ void Pair::computeScore() {
         }
     }
 
-    return;
-
     if(mLeftScore && mRightScore) {
         int leftMOffset, leftMLen, rightMOffset, rightMLen;
         BamUtil::getMOffsetAndLen(mLeft, leftMOffset, leftMLen);
