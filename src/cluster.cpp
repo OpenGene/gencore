@@ -146,12 +146,12 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
 }
 
 Pair* Cluster::consensusMerge() {
-    if(mPairs.size() == 1) {
+    /*if(mPairs.size() == 1) {
     	Pair* p = mPairs[mPairs.size()-1];
     	p->mMergeReads = mPairs.size();
     	mPairs.pop_back();
     	return p;
-    }
+    }*/
 
     int leftDiff = 0;
     int rightDiff = 0;
@@ -205,7 +205,7 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
         if(part == NULL)
             continue;
 
-        int containedBy = 0;
+        int containedBy = 1;
 
         for(int j=0; j<mPairs.size(); j++) {
             if(i == j)
@@ -261,7 +261,7 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
     }
 
     // no marjority
-    if(mostContainedByNum < containedByList.size()*0.4)
+    if(mostContainedByNum < containedByList.size()*0.4 && containedByList.size() != 1)
         return NULL;
 
     bam1_t* out = NULL;
@@ -277,6 +277,10 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
         outScore = mPairs[mostContainedById]->getRightScore();
         // make it null so that it will not be deleted
         mPairs[mostContainedById]->mRight = NULL;
+    }
+
+    if(out == NULL) {
+        return NULL;
     }
 
     vector<bam1_t *> reads;
@@ -345,7 +349,7 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
 }
 
 int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& scores, bool isLeft) {
-    if(reads.size() <= 1 || out == NULL)
+    if(out == NULL)
         return 0;
 
     int diff = 0;
