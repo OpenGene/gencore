@@ -64,6 +64,35 @@ important steps:
 5. if there exists a major nucleotide with good quality, use this nucleotide for this position; otherwise, check the reference nucleotide from reference genome (if reference is specified).
 6. when checking the reference, if there exists one or more reads are concordant with reference genome with high quality, or all reads at this positions are with low quality, use the reference nucleotide for this position.
 
+## the quality thresholds
+`gencore` uses 3 different thresholds, and they can be specified by the commandline options：
+
+| Quality threshold | Default Score | CMD option |
+|- | - | - |
+| High Quality | 30 (Q30) | --high_qual |
+| Moderate Quality | 20 (Q20) | --moderate_qual |
+| Low Quality | 15 (Q15) | --low_qual |
+
+## the scoring
+`gencore` assigns a score to each base in a read of a read cluster, the score means the confidence of this base. The score is given by following rules:
+
+| in overlapped region? | matched with its pair? | condition? | score for this base |
+| - | - | - | - |
+| NO | N/A | NO | 6 |
+| YES | YES | this_qual + pair_qual >= 2 * MODERATE_QUAL | 8 |
+| YES | YES | this_qual + pair_qual < 2 * MODERATE_QUAL | 7 |
+| YES | NO | this_qual >= HIGH_QUAL, pair_qual <= LOW_QUAL | 5 |
+| YES | NO | this_qual >= HIGH_QUAL, pair_qual >= HIGH_QUAL | 4 |
+| YES | NO | LOW_QUAL < this_qual < HIGH_QUAL, LOW_QUAL < pair_qual < HIGH_QUAL | 3 |
+| YES | NO | this_qual <= LOW_QUAL, pair_qual <= LOW_QUAL | 2 |
+| YES | NO | this_qual <= LOW_QUAL, pair_qual >= HIGH_QUAL | 1 |
+
+In this table:
+* `this_qual` is the quality of this base
+* `pair_qual` is the quality of the corresponding in the overlapped region of a pair.
+* `HIGH_QUAL` is the quality threshold that can be specified by `--high_qual`
+* `MODERATE_QUAL` is the quality threshold that can be specified by `--moderate_qual`
+* `LOW_QUAL` is the quality threshold that can be specified by `--low_qual`
 
 # UMI format
 `gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
