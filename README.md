@@ -54,6 +54,17 @@ As described above, gencore can eliminate the errors introduced by library prepa
 ![image](http://www.opengene.org/gencore/gencore.png)  
 ***This is the image showing the result of gencore processed BAM. It becomes much cleaner. Cheers!***
 
+
+# how it works
+important steps:
+1. clusters the reads by their mapping positions and UMIs (if UMIs are applicable).
+2. for each cluster, compares its supporting reads number (the number of reads/pairs for this DNA fragment) with the threshold specified by `supporting_reads`. If it passes, start to generate a consensus read for it.
+3. if the reads are paired, finds the overlapped region of each pair, and scores the bases in the overlapped regions according their concordance and base quality.
+4. for each base position at this cluster, computes the total scores of each different nucleotide (A/T/C/G/N).
+5. if there exists a major nucleotide with good quality, use this nucleotide for this position; otherwise, check the reference nucleotide from reference genome (if reference is specified).
+6. when checking the reference, if there exists one or more reads are concordant with reference genome with high quality, or all reads at this positions are with low quality, use the reference nucleotide for this position.
+
+
 # UMI format
 `gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
 
@@ -72,7 +83,9 @@ options:
   -o, --out                  output bam/sam file. STDOUT will be written to if it's not specified (string [=-])
   -r, --ref                  reference fasta file name (should be an uncompressed .fa/.fasta file) (string)
   -u, --umi_prefix           the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats. (string [=])
-  -s, --supporting_reads     only output consensus reads that merged by >= <supporting_reads> reads. Default value is 2. (int [=2])
+  -s, --supporting_reads     only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 2. (int [=2])
+  -a, --ratio_threshold      if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8 (double [=0.8])
+  -c, --score_threshold      if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6 (int [=6])
       --quit_after_contig    stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation. (int [=0])
       --debug                output some debug information to STDERR.
   -?, --help                 print this message
