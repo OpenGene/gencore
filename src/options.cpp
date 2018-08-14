@@ -61,5 +61,31 @@ bool Options::validate() {
         error_exit("score_threshold cannot be less than 1");
     }
 
+    if(highQuality > 40) {
+        error_exit("high_qual cannot be greater than 40");
+    } else if(highQuality < 20) {
+        error_exit("high_qual cannot be less than 20");
+    }
+
+    if(moderateQuality > 35) {
+        error_exit("moderate_qual cannot be greater than 35");
+    } else if(moderateQuality < 15) {
+        error_exit("moderate_qual cannot be less than 15");
+    }
+
+    if(lowQuality > 30) {
+        error_exit("low_qual cannot be greater than 30");
+    } else if(lowQuality < 8) {
+        error_exit("low_qual cannot be less than 8");
+    }
+
+    if(lowQuality > moderateQuality) {
+        error_exit("low_qual cannot be greater than moderate_qual");
+    }
+
+    if(moderateQuality > highQuality) {
+        error_exit("moderate_qual cannot be greater than high_qual");
+    }
+
     return true;
 }
