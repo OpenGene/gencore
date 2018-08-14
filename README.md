@@ -3,10 +3,12 @@ A tool to GENerate COnsensus REads.
 * [A quick example](#a-quick-example)
 * [Download, compile and install](#get-gencore)
 * [Why to use gencore](#why-to-use-gencore)
+* [How it works](#how-it-works)
+* [Command examples](#command-examples)
 * [UMI format](#umi-format)
 * [All options](#all-options)
 
-# What's gencore?
+# what's gencore?
 `gencore` is a tool to generate consensus reads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which contains much less errors than the original reads.
 
 This tool groups the reads of same origin by their mapping positions and unique molecular identifiers (UMI). It can run with or without UMI. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
@@ -15,12 +17,12 @@ This tool can eliminate the errors introduced by library preparation and sequenc
 
 `gencore` accepts a sorted BAM/SAM with its corresponding reference fasta as input, and outputs an unsorted BAM/SAM.
 
-# A quick example
+# a quick example
 ```shell
 gencore -i input.sorted.bam -o output.bam -r hg19.fasta
 ```
 
-# Get gencore
+# get gencore
 ## download binary 
 This binary is only for Linux systems: http://opengene.org/gencore/gencore
 ```shell
@@ -42,7 +44,7 @@ make
 sudo make install
 ```
 
-# Why to use gencore?
+# why to use gencore?
 As described above, gencore can eliminate the errors introduced by library preparation and sequencing processes, and consenquently it can greatly reduce the false positives for downstream variant calling. Let me show your an example.
 
 ## original BAM
@@ -94,6 +96,24 @@ In this table:
 * `MODERATE_QUAL` is the quality threshold that can be specified by `--moderate_qual`
 * `LOW_QUAL` is the quality threshold that can be specified by `--low_qual`
 
+# command examples
+If you want to get very clean data, we can only keep the clusters with 2 or more supporting reads (recommended for ultra-deep sequencing with higher dup-rate):
+```
+gencore -i in.bam -o out.bam -r hg19.fa -s 2
+```
+If you want to keep all the DNA fragments, we can set `supporting_reads` to 1 (this option can be used to replace `picard markduplicate` to deduplication):
+```
+gencore -i in.bam -o out.bam -r hg19.fa -s 1
+```
+(Recommanded) If you want to keep all the DNA fragments, and for each output read you want to discard all the low quality unoverlapped mutations to obtain a relative clean data (recommended for dup-rate < 50%):
+```
+gencore -i in.bam -o out.bam -r hg19.fa -s 1 --score_threshold=8
+```
+If you want to obtain fewer but ultra clean data, you can both increase the `supporting_reads` and the `ratio_threshold`:
+```
+gencore -i in.bam -o out.bam -r hg19.fa -s 3 --ratio_threshold=0.9
+```
+
 # UMI format
 `gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
 
@@ -105,7 +125,7 @@ The UMI should in the tail of query names. It can have a prefix like `UMI`, foll
 * Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGCATAC"`, prefix = `""`, umi = `"GAGCATAC"`
 * Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC"`, prefix = `""`, umi = `"GAGC_ATAC"`
 
-# All options
+# all options
 ```
 options:
   -i, --in                   input sorted bam/sam file. STDIN will be read from if it's not specified (string [=-])
