@@ -152,8 +152,18 @@ void Pair::setLeft(bam1_t *b) {
 void Pair::setRight(bam1_t *b) {
     mRight = b;
     string umi = BamUtil::getUMI(mRight, mOptions->umiPrefix);
-    if(!mUMI.empty() && umi!=mUMI)
+    if(!mUMI.empty() && umi!=mUMI) {
+        cerr << "Mismatched UMI of a pair of reads" << endl;
+        if(mLeft) {
+            cerr << "Left:" << endl;
+            BamUtil::dump(mLeft);
+        }
+        if(mRight) {
+            cerr << "Right:" << endl;
+            BamUtil::dump(mRight);
+        }
         error_exit("The UMI of a read pair should be identical, but we got " + mUMI + " and " + umi );
+    }
     else
         mUMI = umi;
     mRightCigar = BamUtil::getCigar(mRight);
