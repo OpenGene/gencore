@@ -161,16 +161,16 @@ Pair* Cluster::consensusMerge() {
     Pair *p = new Pair(mOptions);
     p->mMergeReads = mPairs.size();
     if(left && right) {
-        p->setLeft(left);
-        p->mMergeLeftDiff = leftDiff;
-        p->setRight(right);
-        p->mMergeRightDiff = rightDiff;
         // make qname consistent to keep pair relationship
         if(left->core.l_qname <= right->core.l_qname) {
             BamUtil::copyQName(left, right);
         } else {
             BamUtil::copyQName(right, left);
         }
+        p->setLeft(left);
+        p->mMergeLeftDiff = leftDiff;
+        p->setRight(right);
+        p->mMergeRightDiff = rightDiff;
     }
     return p;
 }
