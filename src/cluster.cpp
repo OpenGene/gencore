@@ -465,6 +465,9 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
                 refbase = refdata[refpos];
         }
 
+        if(refbase!='A' && refbase!='T' && refbase!='C' && refbase!='G')
+            refbase = 0;
+
         // the secondary base is a single base
         if(secNum ==1){
             // low quality secondary
