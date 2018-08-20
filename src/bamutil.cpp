@@ -10,7 +10,7 @@ BamUtil::~BamUtil(){
 }
 
 void BamUtil::dump(bam1_t *b) {
-    cerr << b->core.tid << ":" << b->core.pos << " TLEN:" << b->core.isize << endl;
+    cerr << b->core.tid << ":" << b->core.pos << ", M:" << b->core.mtid << ":" << b->core.mpos << " TLEN:" << b->core.isize << endl;
     cerr << getQName(b) << " " << getCigar(b) << endl;
     cerr << getSeq(b) << endl;
     cerr << getQual(b) << endl;
