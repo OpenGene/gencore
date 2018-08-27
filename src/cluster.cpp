@@ -167,8 +167,13 @@ Pair* Cluster::consensusMerge() {
         } else {
             BamUtil::copyQName(right, left);
         }
+    }
+    if(left) {
         p->setLeft(left);
         p->mMergeLeftDiff = leftDiff;
+    }
+
+    if(right) {
         p->setRight(right);
         p->mMergeRightDiff = rightDiff;
     }
