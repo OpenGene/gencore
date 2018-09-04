@@ -44,6 +44,9 @@ public:
     char scoreOfBothLowQualityMismatch;
     char scoreOfUnbalancedMismatchHighQuality;
     char scoreOfUnbalancedMismatchLowQuality;
+
+    // threshold for skipping low complexity cluster
+    int skipLowComplexityClusterThreshold;
 };
 
 #endif

@@ -8,26 +8,31 @@ Cluster::Cluster(Options* opt){
 }
 
 Cluster::~Cluster(){
-    for(int i=0; i<mPairs.size(); i++) {
-        delete mPairs[i];
-        mPairs[i] = NULL;
+    map<string, Pair*>::iterator iter;
+    for(iter = mPairs.begin(); iter!=mPairs.end(); iter++) {
+        delete iter->second;
     }
 }
 
 void Cluster::addPair(Pair* p){
-    mPairs.push_back(p);
+    string qname = p->getQName();
+    if(mPairs.count(qname)>0)
+        delete mPairs[qname];
+    mPairs[qname] = p;
 }
 
 void Cluster::dump(){
-    for(int i=0; i<mPairs.size(); i++) {
-        mPairs[i]->dump();
+    map<string, Pair*>::iterator iter;
+    for(iter = mPairs.begin(); iter!=mPairs.end(); iter++) {
+        iter->second->dump();
     }
 }
 
 bool Cluster::matches(Pair* p){
-    for(int i=0; i<mPairs.size(); i++) {
-        if(mPairs[i]->isDupWith(p))
-        	return true;
+    map<string, Pair*>::iterator iter;
+    for(iter = mPairs.begin(); iter!=mPairs.end(); iter++) {
+        if(iter->second->isDupWith(p))
+            return true;
     }
     return false;
 }
@@ -93,8 +98,9 @@ int Cluster::umiDiff(const string& umi1, const string& umi2) {
 vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
 	vector<Cluster*> subClusters;
     map<string, int> umiCount;
-    for(int i=0; i<mPairs.size(); i++) {
-        string umi = mPairs[i]->getUMI();
+    map<string, Pair*>::iterator iterOfPairs;
+    for(iterOfPairs = mPairs.begin(); iterOfPairs!=mPairs.end(); iterOfPairs++) {
+        string umi = iterOfPairs->second->getUMI();
         umiCount[umi]++;
     }
 	while(mPairs.size()>0) {
@@ -112,9 +118,9 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
         Cluster* c = new Cluster(mOptions);
 
 		// create the group by the top UMI
-        vector<Pair*>::iterator piter;
+        map<string, Pair*>::iterator piter;
         for(piter = mPairs.begin(); piter!=mPairs.end();){
-    		Pair* p = *piter;
+    		Pair* p = piter->second;
             string umi = p->getUMI();
             if(umiDiff(umi, topUMI) <= umiDiffThreshold) {
                 c->addPair(p);
@@ -146,13 +152,6 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
 }
 
 Pair* Cluster::consensusMerge() {
-    /*if(mPairs.size() == 1) {
-    	Pair* p = mPairs[mPairs.size()-1];
-    	p->mMergeReads = mPairs.size();
-    	mPairs.pop_back();
-    	return p;
-    }*/
-
     int leftDiff = 0;
     int rightDiff = 0;
     bam1_t* left = consensusMergeBam(true, leftDiff);
@@ -181,18 +180,61 @@ Pair* Cluster::consensusMerge() {
 }
 
 bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
+    if(mPairs.size() < mOptions->clusterSizeReq) {
+        return NULL;
+    }
+    vector<Pair*> allPairs;
+    map<string, Pair*>::iterator iterOfPairs;
+    for(iterOfPairs = mPairs.begin(); iterOfPairs!=mPairs.end(); iterOfPairs++) {
+        allPairs.push_back(iterOfPairs->second);
+    }
+    if(mPairs.size() > mOptions->skipLowComplexityClusterThreshold) {
+        map<string, int> cigars;
+        bam1_t* firstRead = NULL;
+        for(iterOfPairs = mPairs.begin(); iterOfPairs!=mPairs.end(); iterOfPairs++) {
+            Pair* p = iterOfPairs->second;
+            bam1_t* b = p->mLeft;
+            if(!isLeft)
+                b = p->mRight;
+            if(b) {
+                string qname = BamUtil::getQName(b);
+                if(cigars.count(qname) == 0)
+                    cigars[qname] = 1;
+                else
+                    cigars[qname]++;
+                if(!firstRead)
+                    firstRead = b;
+            }
+        }
+        // this is abnormal, usually due to mapping result of low complexity reads
+        if(cigars.size() > mPairs.size() * 0.5 && firstRead) {
+            string seq = BamUtil::getSeq(firstRead);
+            int diffNeighbor = 0;
+            for(int i=0;i<seq.length()-1;i++) {
+                if(seq[i] != seq[i+1])
+                    diffNeighbor++;
+            }
+            if(diffNeighbor < seq.length()*0.5) {
+                if(mOptions->debug) {
+                    cerr << "Skipping " << mPairs.size() << " low complexity reads like: " << seq << endl;
+                }
+                return NULL;
+            }
+        }
+    }
+
     bool leftReadMode = isLeft;
     // if processing right reads, check if this group is aligned by left
     if(!isLeft) {
         bool leftAligned = true;
         int lastPos = -1;
-        for(int i=0; i<mPairs.size(); i++) {
-            if(mPairs[i]->mRight) {
-                if(lastPos >= 0 && mPairs[i]->mRight->core.pos != lastPos) {
+        for(int i=0; i<allPairs.size(); i++) {
+            if(allPairs[i]->mRight) {
+                if(lastPos >= 0 && allPairs[i]->mRight->core.pos != lastPos) {
                     leftAligned = false;
                     break;
                 }
-                lastPos = mPairs[i]->mRight->core.pos;
+                lastPos = allPairs[i]->mRight->core.pos;
             }
         }
         // if it's left aligned, then process them as left reads
@@ -200,26 +242,26 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
             leftReadMode = true;
     }
     // first we get a read that is most contained by other reads
-    vector<int> containedByList(mPairs.size(), 0);
-    for(int i=0; i<mPairs.size(); i++) {
+    vector<int> containedByList(allPairs.size(), 0);
+    for(int i=0; i<allPairs.size(); i++) {
         bam1_t* part = NULL;
         if(isLeft)
-            part = mPairs[i]->mLeft;
+            part = allPairs[i]->mLeft;
         else
-            part = mPairs[i]->mRight;
+            part = allPairs[i]->mRight;
         if(part == NULL)
             continue;
 
         int containedBy = 1;
 
-        for(int j=0; j<mPairs.size(); j++) {
+        for(int j=0; j<allPairs.size(); j++) {
             if(i == j)
                 continue;
             bam1_t* whole = NULL;
             if(isLeft)
-                whole = mPairs[j]->mLeft;
+                whole = allPairs[j]->mLeft;
             else
-                whole = mPairs[j]->mRight;
+                whole = allPairs[j]->mRight;
             if(whole == NULL)
                 continue;
 
@@ -248,15 +290,15 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
             int thisLen = 0;
             int curLen = 0;
             if(isLeft) {
-                if(mPairs[i]->mLeft)
-                    thisLen = mPairs[i]->mLeft->core.l_qseq;
-                if(mPairs[mostContainedById]->mLeft)
-                    curLen = mPairs[mostContainedById]->mLeft->core.l_qseq;
+                if(allPairs[i]->mLeft)
+                    thisLen = allPairs[i]->mLeft->core.l_qseq;
+                if(allPairs[mostContainedById]->mLeft)
+                    curLen = allPairs[mostContainedById]->mLeft->core.l_qseq;
             } else {
-                if(mPairs[i]->mRight)
-                    thisLen = mPairs[i]->mRight->core.l_qseq;
-                if(mPairs[mostContainedById]->mRight)
-                    curLen = mPairs[mostContainedById]->mRight->core.l_qseq;
+                if(allPairs[i]->mRight)
+                    thisLen = allPairs[i]->mRight->core.l_qseq;
+                if(allPairs[mostContainedById]->mRight)
+                    curLen = allPairs[mostContainedById]->mRight->core.l_qseq;
             }
             if(thisLen < curLen) {
                 mostContainedByNum = containedByList[i];
@@ -266,22 +308,23 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
     }
 
     // no marjority
-    if(mostContainedByNum < containedByList.size()*0.4 && containedByList.size() != 1)
+    if(mostContainedByNum < containedByList.size()*0.4 && containedByList.size() != 1) {
         return NULL;
+    }
 
     bam1_t* out = NULL;
     char* outScore = NULL;
     if(isLeft) {
-        out = mPairs[mostContainedById]->mLeft;
-        outScore = mPairs[mostContainedById]->getLeftScore();
+        out = allPairs[mostContainedById]->mLeft;
+        outScore = allPairs[mostContainedById]->getLeftScore();
         // make it null so that it will not be deleted
-        mPairs[mostContainedById]->mLeft = NULL;
+        allPairs[mostContainedById]->mLeft = NULL;
     }
     else {
-        out = mPairs[mostContainedById]->mRight;
-        outScore = mPairs[mostContainedById]->getRightScore();
+        out = allPairs[mostContainedById]->mRight;
+        outScore = allPairs[mostContainedById]->getRightScore();
         // make it null so that it will not be deleted
-        mPairs[mostContainedById]->mRight = NULL;
+        allPairs[mostContainedById]->mRight = NULL;
     }
 
     if(out == NULL) {
@@ -294,18 +337,18 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
     reads.push_back(out);
     scores.push_back(outScore);
 
-    for(int j=0; j<mPairs.size(); j++) {
+    for(int j=0; j<allPairs.size(); j++) {
         if(mostContainedById == j)
             continue;
         bam1_t* read = NULL;
         char* score = NULL;
         if(isLeft) {
-            read = mPairs[j]->mLeft;
-            score = mPairs[j]->getLeftScore();
+            read = allPairs[j]->mLeft;
+            score = allPairs[j]->getLeftScore();
         }
         else {
-            read = mPairs[j]->mRight;
-            score = mPairs[j]->getRightScore();
+            read = allPairs[j]->mRight;
+            score = allPairs[j]->getRightScore();
         }
         if(read == NULL || score == NULL)
             continue;
@@ -321,32 +364,6 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
         out = NULL;
         return NULL;
     }
-
-    // if the sequences are right ones of pairs, we check whether it a completely a chaos
-    /*if(!isLeft) {
-        int bothEndNotAligned = 0;
-        for(int r=0; r<reads.size(); r++) {
-            // left aligned
-            if(reads[r]->core.pos == out->core.pos && BamUtil::isPartOf(out, reads[r], true))
-                continue;
-            // right aligned
-            if(reads[r]->core.pos + bam_cigar2rlen(reads[r]->core.n_cigar, (uint32_t *)bam_get_cigar(reads[r])) == out->core.pos + bam_cigar2rlen(out->core.n_cigar, (uint32_t *)bam_get_cigar(out)))
-                continue;
-
-            // both not aligned
-            bothEndNotAligned++;
-        }
-
-        if(bothEndNotAligned*2 >= reads.size()) {
-            cerr << "Chaos of " << reads.size() << " reads: " << BamUtil::getQName(out) << endl;
-            for(int r=0; r<reads.size(); r++) {
-                cerr << reads[r]->core.pos << "," << reads[r]->core.mpos << "," << reads[r]->core.isize << "," << reads[r]->core.l_qseq << "," << BamUtil::getCigar(reads[r]) << endl;
-            }
-            bam_destroy1(out);
-            out = NULL;
-            return NULL;
-        }
-    }*/
 
     diff = makeConsensus(reads, out, scores, leftReadMode);
 
@@ -615,36 +632,20 @@ void Cluster::addRead(bam1_t* b) {
     if(b->core.isize > 0) {
         Pair* p = new Pair(mOptions);
         p->setLeft(b);
-        mPairs.push_back(p);
+        mPairs[p->getQName()]=p;
         return;
     }
-    // right or unproper paired
-    bool found = false;
-    string qname = BamUtil::getQName(b);
-    for(int i=0; i<mPairs.size(); i++) {
-        Pair* p = mPairs[i];
-        if(p->mLeft && !p->mRight) {
-            if(p->getQName() == qname) {
-                p->setRight(b);
-                found = true;
-                break;
-            }
-        } else if(p->mRight && !p->mLeft) {
-            if(p->getQName() == qname) {
-                p->setLeft(b);
-                found = true;
-                break;
-            }
-        }
-    }
 
-    if(!found) {
+    string qname = BamUtil::getQName(b);
+    if(mPairs.count(qname) > 0)
+        mPairs[qname]->setRight(b);
+    else {
         Pair* p = new Pair(mOptions);
         if(b->core.isize < 0)
             p->setRight(b);
         else
             p->setLeft(b);
-        mPairs.push_back(p);
+        mPairs[qname]=p;
     }
 }
 

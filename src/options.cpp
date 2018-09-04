@@ -29,6 +29,7 @@ Options::Options(){
     scoreOfUnbalancedMismatchLowQuality = 1;
 
     baseScoreReq = scoreOfNotOverlapped;
+    skipLowComplexityClusterThreshold = 1000;
 }
 
 bool Options::validate() {

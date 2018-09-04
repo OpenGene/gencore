@@ -229,9 +229,10 @@ void Gencore::finishConsensus(map<int, map<int, map<int, Cluster*>>>& clusters) 
             for(iter3 = iter2->second.begin(); iter3 != iter2->second.end(); ) {
                 // for unmapped reads, we just store them
                 if(iter1->first < 0 || iter2->first < 0 || iter3->first < 0 ) {
-                    for(int i=0; i<iter3->second->mPairs.size(); i++) {
+                    map<string, Pair*>::iterator iterOfPairs;
+                    for(iterOfPairs = iter3->second->mPairs.begin(); iterOfPairs!=iter3->second->mPairs.end(); iterOfPairs++) {
                         //csPairs[i]->dump();
-                        outputPair(iter3->second->mPairs[i]);
+                        outputPair(iterOfPairs->second);
                     }
                 } else {
                     vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->unproperReadsUmiDiffThreshold);

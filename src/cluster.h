@@ -42,7 +42,7 @@ private:
     static int umiDiff(const string& umi1, const string& umi2);
     
 public:
-    vector<Pair*> mPairs;
+    map<string, Pair*> mPairs;
     Options* mOptions;
 };
 
