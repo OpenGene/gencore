@@ -5,6 +5,8 @@ Gencore::Gencore(Options *opt){
     mOptions = opt;
     mBamHeader = NULL;
     mOutSam = NULL;
+    mPreStats = new Stats(opt);
+    mPostStats = new Stats(opt);
 }
 
 Gencore::~Gencore(){
@@ -20,6 +22,8 @@ Gencore::~Gencore(){
             exit(-1);
         }
     }
+    delete mPreStats;
+    delete mPostStats;
 }
 
 void Gencore::releaseClusters(map<int, map<int, map<int, Cluster*>>>& clusters) {
@@ -52,22 +56,21 @@ void Gencore::outputPair(Pair* p) {
     if(mOutSam == NULL || mBamHeader == NULL)
         return ;
 
-    if(p->mMergeReads < mOptions->clusterSizeReq)
-        return ;
-
     if(p->mLeft) {
+        mPostStats->addRead(p->mLeft->core.l_qseq, BamUtil::getED(p->mLeft));
         if(sam_write1(mOutSam, mBamHeader, p->mLeft) <0) {
             cerr << "Writing failed, exiting..." << endl;
             exit(-1);
         }
     }
     if(p->mRight) {
+        mPostStats->addRead(p->mRight->core.l_qseq, BamUtil::getED(p->mRight));
         if(sam_write1(mOutSam, mBamHeader, p->mRight) <0) {
             cerr << "Writing failed, exiting..." << endl;
             exit(-1);
         }
     }
-
+    mPostStats->addMolecule(1, p->mLeft && p->mRight);
 }
 
 void Gencore::consensus(){
@@ -116,7 +119,7 @@ void Gencore::consensus(){
                 exit(-1);
             }
         }
-        // for testing, we only process chr1
+        // for testing, we only process to some contig
         if(mOptions->maxContig>0 && b->core.tid>=mOptions->maxContig){
             b = bam_init1();
             break;
@@ -130,6 +133,8 @@ void Gencore::consensus(){
 
         // unmapped reads, we just write it and continue
         if(b->core.tid < 0 || b->core.pos < 0) {
+            mPreStats->addRead(b->core.l_qseq, 0, false);
+            mPostStats->addRead(b->core.l_qseq, 0, false);
             if(sam_write1(mOutSam, mBamHeader, b) <0) {
                 cerr << "Writing failed, exiting..." << endl;
                 exit(-1);
@@ -151,6 +156,12 @@ void Gencore::consensus(){
 
     bam_destroy1(b);
     sam_close(in);
+
+    cerr << "----Before gencore processing:" << endl;
+    mPreStats->print();
+
+    cerr << endl << "----After gencore processing:" << endl;
+    mPostStats->print();
 }
 
 void Gencore::addToProperCluster(bam1_t* b) {
@@ -193,7 +204,7 @@ void Gencore::addToProperCluster(bam1_t* b) {
                 if(iter1->first == tid && iter3->first >= b->core.pos) {
                     break;
                 }
-                vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->properReadsUmiDiffThreshold);
+                vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->properReadsUmiDiffThreshold, mPreStats, mPostStats);
                 for(int i=0; i<csPairs.size(); i++) {
                     //csPairs[i]->dump();
                     outputPair(csPairs[i]);
@@ -235,7 +246,7 @@ void Gencore::finishConsensus(map<int, map<int, map<int, Cluster*>>>& clusters) 
                         outputPair(iterOfPairs->second);
                     }
                 } else {
-                    vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->unproperReadsUmiDiffThreshold);
+                    vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->unproperReadsUmiDiffThreshold, mPreStats, mPostStats);
                     for(int i=0; i<csPairs.size(); i++) {
                         //csPairs[i]->dump();
                         outputPair(csPairs[i]);
@@ -285,6 +296,7 @@ void Gencore::createCluster(map<int, map<int, map<int, Cluster*>>>& clusters, in
 }
 
 void Gencore::addToCluster(bam1_t* b) {
+    mPreStats->addRead(b->core.l_qseq, BamUtil::getED(b));
     // unproperly mapped
     if(b->core.isize == 0) {
         addToUnProperCluster(b);

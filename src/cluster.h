@@ -9,6 +9,7 @@
 #include "htslib/sam.h"
 #include <vector>
 #include <map>
+#include "stats.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ public:
     void addRead(bam1_t* b);
 
     bool matches(Pair* p);
-    vector<Pair*> clusterByUMI(int umiDiffThreshold = 1);
+    vector<Pair*> clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats* postStats);
     Pair* consensusMerge();
     bam1_t* consensusMergeBam(bool isLeft, int& diff);
     int makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& scores, bool isLeft);

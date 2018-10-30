@@ -7,6 +7,7 @@
 #include "htslib/sam.h"
 #include "options.h"
 #include "cluster.h"
+#include "stats.h"
 #include <map>
 
 using namespace std;
@@ -37,6 +38,8 @@ private:
     map<int, map<int, map<int, Cluster*>>> mUnProperClusters;
     bam_hdr_t *mBamHeader;
     samFile* mOutSam;
+    Stats* mPreStats;
+    Stats* mPostStats;
 };
 
 #endif

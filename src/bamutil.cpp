@@ -85,6 +85,15 @@ string BamUtil::getQual(bam1_t *b) {
     return s;
 }
 
+int BamUtil::getED(bam1_t* b) {
+    const char tagNM[2] ={'N', 'M'};
+    uint8_t* dataNM = (uint8_t*)bam_aux_get(b,tagNM);
+    if(!dataNM)
+        return 0;
+    int valNM = bam_aux2i(dataNM);
+    return valNM;
+}
+
 string BamUtil::getSeq(bam1_t *b) {
     uint8_t *data = bam_get_seq(b);
     int len = b->core.l_qseq;

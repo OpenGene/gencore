@@ -24,6 +24,10 @@ public:
     int maxContig;
     bam_hdr_t* bamHeader;
     bool debug;
+    // json file
+    string jsonFile;
+    // html file
+    string htmlFile;
 
     // thresholds
     int properReadsUmiDiffThreshold;

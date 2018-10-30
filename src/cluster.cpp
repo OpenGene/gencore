@@ -95,7 +95,7 @@ int Cluster::umiDiff(const string& umi1, const string& umi2) {
     return min(diff, revDiff);
 }
     
-vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
+vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats* postStats) {
 	vector<Cluster*> subClusters;
     map<string, int> umiCount;
     map<string, Pair*>::iterator iterOfPairs;
@@ -116,6 +116,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
         }
 
         Cluster* c = new Cluster(mOptions);
+        bool isPE = false;
 
 		// create the group by the top UMI
         map<string, Pair*>::iterator piter;
@@ -124,6 +125,8 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
             string umi = p->getUMI();
             if(umiDiff(umi, topUMI) <= umiDiffThreshold) {
                 c->addPair(p);
+                if(p->mLeft && p->mRight)
+                    isPE = true;
                 piter = mPairs.erase(piter);
                 umiCount[umi] = 0;
             } else {
@@ -133,8 +136,11 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
         //if(mPairs.size()>0 || subClusters.size()>0)
         //    cerr << "UMI " << topUMI<< " " << topCount << "/" << c->mPairs.size() << endl;
         subClusters.push_back(c);
+        preStats->addMolecule(c->mPairs.size(), isPE);
         umiCount[topUMI] = 0;
 	}
+
+    preStats->addCluster(subClusters.size()>1);
 
     //if(subClusters.size()>1)
     //    cerr << subClusters.size() << " clusters" << endl;
@@ -143,10 +149,15 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold) {
 
 	for(int i=0; i<subClusters.size(); i++) {
 		Pair* p = subClusters[i]->consensusMerge();
-		consensusPairs.push_back(p);
+        if(p->mMergeReads >= mOptions->clusterSizeReq)
+		  consensusPairs.push_back(p);
 		delete subClusters[i];
 		subClusters[i] = NULL;
 	}
+
+    if(consensusPairs.size()>0) {
+        postStats->addCluster(consensusPairs.size()>1);
+    }
 
 	return consensusPairs;
 }
@@ -621,8 +632,8 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         }
     }
 
-    delete seqBak;
-    delete qualBak;
+    delete[] seqBak;
+    delete[] qualBak;
 
     return diff;
 }

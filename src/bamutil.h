@@ -31,6 +31,7 @@ public:
     static bool isProperPair(bam1_t *b);
     static int getRightRefPos(bam1_t *b);
     static void getMOffsetAndLen(bam1_t *b, int& MOffset, int& MLen);
+    static int getED(bam1_t* b);
 
     static bool test();
 
