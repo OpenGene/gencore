@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
 
     // reporting
     opt.jsonFile = cmd.get<string>("json");
-    opt.htmlFile = cmd.get<string>("html");
+    //opt.htmlFile = cmd.get<string>("html");
 
     opt.validate();
     
