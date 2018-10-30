@@ -1,5 +1,6 @@
 #include "gencore.h"
 #include "bamutil.h"
+#include "jsonreporter.h"
 
 Gencore::Gencore(Options *opt){
     mOptions = opt;
@@ -24,6 +25,11 @@ Gencore::~Gencore(){
     }
     delete mPreStats;
     delete mPostStats;
+}
+
+void Gencore::reportJSON() {
+    JsonReporter reporter(mOptions);
+    reporter.report(mPreStats, mPostStats);
 }
 
 void Gencore::releaseClusters(map<int, map<int, map<int, Cluster*>>>& clusters) {
@@ -162,6 +168,8 @@ void Gencore::consensus(){
 
     cerr << endl << "----After gencore processing:" << endl;
     mPostStats->print();
+
+    reportJSON();
 }
 
 void Gencore::addToProperCluster(bam1_t* b) {

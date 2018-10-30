@@ -21,6 +21,11 @@ int main(int argc, char* argv[]){
         return 0;
     }
 
+    if (argc == 2 && (strcmp(argv[1], "-v")==0 || strcmp(argv[1], "--version")==0)){
+        cerr << "gencore " << VERSION_NUMBER << endl;
+        return 0;
+    }
+
     cmdline::parser cmd;
     // input/output
     cmd.add<string>("in", 'i', "input sorted bam/sam file. STDIN will be read from if it's not specified", false, "-");
@@ -40,7 +45,7 @@ int main(int argc, char* argv[]){
 
     // reporting
     cmd.add<string>("json", 'j', "the json format report file name", false, "gencore.json");
-    cmd.add<string>("html", 'h', "the html format report file name", false, "gencore.html");
+    //cmd.add<string>("html", 'h', "the html format report file name", false, "gencore.html");
 
     // debugging
     cmd.add("debug", 0, "output some debug information to STDERR.");
@@ -77,6 +82,12 @@ int main(int argc, char* argv[]){
         reference = Reference::instance(&opt);
     }
 
+    stringstream ss;
+    for(int i=0;i<argc;i++){
+        ss << argv[i] << " ";
+    }
+    command = ss.str();
+
     Gencore gencore(&opt);
     gencore.consensus();
 
@@ -84,12 +95,6 @@ int main(int argc, char* argv[]){
         delete reference;
         reference=NULL;
     }
-
-    stringstream ss;
-    for(int i=0;i<argc;i++){
-        ss << argv[i] << " ";
-    }
-    command = ss.str();
 
     time_t t2 = time(NULL);
     cerr << endl << command << endl;

@@ -28,6 +28,7 @@ private:
 	void createCluster(map<int, map<int, map<int, Cluster*>>>& clusters, int tid, int left, int right);
     void outputPair(Pair* p);
     void finishConsensus(map<int, map<int, map<int, Cluster*>>>& clusters);
+    void reportJSON();
 
 private:
     string mInput;
