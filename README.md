@@ -139,7 +139,6 @@ options:
       --moderate_qual        the threshold for a quality score to be considered as moderate quality. Default 20 means Q20. (int [=20])
       --low_qual             the threshold for a quality score to be considered as low quality. Default 15 means Q15. (int [=15])
   -j, --json                 the json format report file name (string [=gencore.json])
-  -h, --html                 the html format report file name (string [=gencore.html])
       --debug                output some debug information to STDERR.
       --quit_after_contig    stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation. (int [=0])
   -?, --help                 print this message
