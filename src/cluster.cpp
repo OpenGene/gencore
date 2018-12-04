@@ -208,17 +208,17 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
             if(!isLeft)
                 b = p->mRight;
             if(b) {
-                string qname = BamUtil::getQName(b);
-                if(cigars.count(qname) == 0)
-                    cigars[qname] = 1;
+                string cigar = BamUtil::getCigar(b);
+                if(cigars.count(cigar) == 0)
+                    cigars[cigar] = 1;
                 else
-                    cigars[qname]++;
+                    cigars[cigar]++;
                 if(!firstRead)
                     firstRead = b;
             }
         }
         // this is abnormal, usually due to mapping result of low complexity reads
-        if(cigars.size() > mPairs.size() * 0.5 && firstRead) {
+        if(cigars.size() > mPairs.size() * 0.1 && firstRead) {
             string seq = BamUtil::getSeq(firstRead);
             int diffNeighbor = 0;
             for(int i=0;i<seq.length()-1;i++) {
@@ -288,6 +288,8 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
         }
 
         containedByList[i] = containedBy;
+        if(mPairs.size() > mOptions->skipLowComplexityClusterThreshold && containedBy>=mPairs.size()/2) 
+            break;
     }
 
     int mostContainedById = -1;
