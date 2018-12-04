@@ -310,10 +310,22 @@ void BamUtil::copyQName(bam1_t *from, bam1_t *to) {
     }
 
     memcpy(todata, fromdata, fromlen);
+    to->core.l_extranul = from->core.l_extranul;
 
-    // pad with \0
-    for(int i=0; i< tolen - fromlen; i++) {
+    /*for(int i=0; i< tolen - fromlen; i++) {
         todata[i + fromlen] = '\0';
+    }*/
+
+    // squeeze data for to
+    if(fromlen != tolen) {
+        char* start = todata + fromlen;
+        char* end = (char*)to->data + to->l_data;
+        int offset = tolen - fromlen;
+        for(char* p=start; p+offset < end; p++) {
+            *p = *(p+offset);
+        }
+        to->core.l_qname = fromlen;
+        to->l_data -= offset;
     }
 }
 

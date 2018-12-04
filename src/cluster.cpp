@@ -171,8 +171,10 @@ Pair* Cluster::consensusMerge() {
     Pair *p = new Pair(mOptions);
     p->mMergeReads = mPairs.size();
     if(left && right) {
+        string lname = BamUtil::getQName(left);
+        string rname = BamUtil::getQName(right);
         // make qname consistent to keep pair relationship
-        if(left->core.l_qname <= right->core.l_qname) {
+        if( lname.length() <=  rname.length()) {
             BamUtil::copyQName(left, right);
         } else {
             BamUtil::copyQName(right, left);
