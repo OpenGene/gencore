@@ -151,6 +151,8 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
 		Pair* p = subClusters[i]->consensusMerge();
         if(p->mMergeReads >= mOptions->clusterSizeReq)
 		  consensusPairs.push_back(p);
+        else
+            delete p;
 		delete subClusters[i];
 		subClusters[i] = NULL;
 	}
