@@ -144,12 +144,16 @@ char* Pair::getRightScore() {
 }
 
 void Pair::setLeft(bam1_t *b) {
+    if(mLeft)
+        bam_destroy1(mLeft);
     mLeft = b;
     mUMI = BamUtil::getUMI(mLeft, mOptions->umiPrefix);
     mLeftCigar = BamUtil::getCigar(mLeft);
 }
 
 void Pair::setRight(bam1_t *b) {
+    if(mRight)
+        bam_destroy1(mRight);
     mRight = b;
     string umi = BamUtil::getUMI(mRight, mOptions->umiPrefix);
     if(!mUMI.empty() && umi!=mUMI) {
