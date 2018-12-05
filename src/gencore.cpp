@@ -306,7 +306,7 @@ void Gencore::createCluster(map<int, map<int, map<int, Cluster*>>>& clusters, in
 void Gencore::addToCluster(bam1_t* b) {
     mPreStats->addRead(b->core.l_qseq, BamUtil::getED(b));
     // unproperly mapped
-    if(b->core.isize == 0) {
+    if(b->core.tid < 0) {
         addToUnProperCluster(b);
     } else {
         addToProperCluster(b);
