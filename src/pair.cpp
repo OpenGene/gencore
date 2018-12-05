@@ -26,7 +26,7 @@ Pair::~Pair(){
         delete[] mLeftScore;
         mLeftScore = NULL;
     }
-    if(mLeftScore) {
+    if(mRightScore) {
         delete[] mRightScore;
         mRightScore = NULL;
     }
