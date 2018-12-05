@@ -646,16 +646,21 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
 
 void Cluster::addRead(bam1_t* b) {
     // left
+    string qname = BamUtil::getQName(b);
+    map<string, Pair*>::iterator iter = mPairs.find(qname);
+
     if(b->core.isize > 0) {
+        if(iter!=mPairs.end()) {
+            delete iter->second;
+        }
         Pair* p = new Pair(mOptions);
         p->setLeft(b);
-        mPairs[p->getQName()]=p;
+        mPairs[qname]=p;
         return;
     }
 
-    string qname = BamUtil::getQName(b);
-    if(mPairs.count(qname) > 0)
-        mPairs[qname]->setRight(b);
+    if(iter!=mPairs.end())
+        iter->second->setRight(b);
     else {
         Pair* p = new Pair(mOptions);
         if(b->core.isize < 0)
