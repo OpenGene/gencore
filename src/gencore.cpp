@@ -295,12 +295,23 @@ void Gencore::addToUnProperCluster(bam1_t* b) {
 }
 
 void Gencore::createCluster(map<int, map<int, map<int, Cluster*>>>& clusters, int tid, int left, int right) {
-    if(clusters.count(tid) == 0)
+    map<int, map<int, map<int, Cluster*>>>::iterator iter1 = clusters.find(tid);
+
+    if(iter1 == clusters.end()) {
         clusters[tid] = map<int, map<int, Cluster*>>();
-    if(clusters[tid].count(left) == 0)
         clusters[tid][left] = map<int, Cluster*>();
-    if(clusters[tid][left].count(right) == 0)
         clusters[tid][left][right] = new Cluster(mOptions);
+    } else {
+        map<int, map<int, Cluster*>>::iterator iter2  =iter1->second.find(left);
+        if(iter2 == iter1->second.end()) {
+            clusters[tid][left] = map<int, Cluster*>();
+            clusters[tid][left][right] = new Cluster(mOptions);
+        } else {
+            map<int, Cluster*>::iterator iter3 = iter2->second.find(right);
+            if(iter3 == iter2->second.end())
+                clusters[tid][left][right] = new Cluster(mOptions);
+        }
+    }
 }
 
 void Gencore::addToCluster(bam1_t* b) {
