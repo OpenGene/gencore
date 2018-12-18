@@ -9,7 +9,7 @@ A tool to GENerate COnsensus REads.
 * [All options](#all-options)
 
 # what's gencore?
-`gencore` is a tool to generate consensus reads from paired-end data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which contains much less errors than the original reads.
+`gencore` is a tool to generate consensus reads from next-generation sequencing (NGS) data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which contains much less errors than the original reads.
 
 This tool groups the reads of same origin by their mapping positions and unique molecular identifiers (UMI). It can run with or without UMI. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
 
