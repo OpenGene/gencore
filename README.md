@@ -49,12 +49,14 @@ sudo make install
 As described above, gencore can eliminate the errors introduced by library preparation and sequencing processes, and consenquently it can greatly reduce the false positives for downstream variant calling. Let me show your an example.
 
 ## original BAM
-![image](http://www.opengene.org/gencore/original.png)  
+![image](http://www.opengene.org/gencore/original.png)   
+
 ***This is an image showing a pileup of the original BAM. A lot of sequencing errors can be observed.***
 
 
 ## gencore processed BAM
-![image](http://www.opengene.org/gencore/gencore.png)  
+![image](http://www.opengene.org/gencore/processed.png)   
+
 ***This is the image showing the result of gencore processed BAM. It becomes much cleaner. Cheers!***
 
 
