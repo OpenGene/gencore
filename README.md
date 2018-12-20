@@ -7,6 +7,7 @@ A tool to GENerate COnsensus REads.
 * [Command examples](#command-examples)
 * [UMI format](#umi-format)
 * [All options](#all-options)
+* [Cite gencore](#citation)
 
 # what's gencore?
 `gencore` is a tool to generate consensus reads from next-generation sequencing (NGS) data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which contains much less errors than the original reads.
@@ -143,3 +144,7 @@ options:
       --quit_after_contig    stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation. (int [=0])
   -?, --help                 print this message
 ```
+# citation
+gencore: an efficient tool to generate consensus reads for error suppressing and duplicate removing of NGS data
+Shifu Chen, Yanqing Zhou, Yaru Chen, Tanxiao Huang, Wenting Liao, Yun Xu, Zhihua Liu, Jia Gu
+bioRxiv 501502; doi: https://doi.org/10.1101/501502
