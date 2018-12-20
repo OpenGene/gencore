@@ -145,6 +145,6 @@ options:
   -?, --help                 print this message
 ```
 # citation
-gencore: an efficient tool to generate consensus reads for error suppressing and duplicate removing of NGS data
+gencore: an efficient tool to generate consensus reads for error suppressing and duplicate removing of NGS data  
 Shifu Chen, Yanqing Zhou, Yaru Chen, Tanxiao Huang, Wenting Liao, Yun Xu, Zhihua Liu, Jia Gu
 bioRxiv 501502; doi: https://doi.org/10.1101/501502
