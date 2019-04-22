@@ -48,51 +48,7 @@ int Cluster::umiDiff(const string& umi1, const string& umi2) {
              diff++;
     }
 
-    if( diff == 0)
-        return 0;
-
-    int underline1 = -1;
-    int underline2 = -1;
-
-    for(int i=0; i<len1; i++) {
-        if(umi1[i] == '_') {
-            underline1 = i;
-            break;
-        }
-    }
-
-    if(underline1 <= 0)
-        return  diff;
-
-    for(int i=0; i<len2; i++) {
-        if(umi2[i] == '_') {
-            underline2 = i;
-            break;
-        }
-    }
-
-    if(underline2 <= 0)
-        return  diff;
-
-    int len11 = underline1;
-    int len12 = len1 - underline1 - 1;
-    int len21 = underline2;
-    int len22 = len2 - underline2 - 1;
-
-    // reversed
-    int d1 = abs(len11 - len22);
-    for(int i=0; i<min(len11, len22); i++) {
-        if(umi1[i] != umi2[underline2 + i + 1])
-            d1++;
-    }
-    int d2 = abs(len12 - len21);
-    for(int i=0; i<min(len12, len21); i++) {
-        if(umi1[underline1 + i + 1] != umi2[i])
-            d2++;
-    }
-    int revDiff = d1 + d2;
-
-    return min(diff, revDiff);
+    return diff;
 }
     
 vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats* postStats) {
