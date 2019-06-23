@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
 
     // reporting
     cmd.add<string>("json", 'j', "the json format report file name", false, "gencore.json");
-    //cmd.add<string>("html", 'h', "the html format report file name", false, "gencore.html");
+    cmd.add<string>("html", 'h', "the html format report file name", false, "gencore.html");
 
     // debugging
     cmd.add("debug", 0, "output some debug information to STDERR.");
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
 
     // reporting
     opt.jsonFile = cmd.get<string>("json");
-    //opt.htmlFile = cmd.get<string>("html");
+    opt.htmlFile = cmd.get<string>("html");
 
     opt.validate();
     

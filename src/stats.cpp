@@ -3,7 +3,6 @@
 #include <sstream>
 #include "util.h"
 
-#define MAX_SUPPORTING_READS 100
 
 Stats::Stats(Options* opt) {
 	mOptions = opt;
@@ -22,6 +21,14 @@ long Stats::getMappedBases() {
 
 long Stats::getMappedReads() {
 	return mRead - mReadUnmapped;
+}
+
+long Stats::getReads() {
+	return mRead;
+}
+
+long Stats::getBases() {
+	return mBase;
 }
 
 void Stats::addRead(int baseNum, int mismatch, bool mapped) {
@@ -62,6 +69,10 @@ double Stats::getDupRate() {
 	return 1.0 - (mMoleculeSE + mMoleculePE * 2) / (double) getMappedReads();
 }
 
+double Stats::getMismatchRate() {
+	return (double)mBaseMismatches/getMappedBases();
+}
+
 void Stats::reportJSON(ofstream& ofs) {
 	ofs << "\t\t\"total_reads\": " << mRead << "," << endl;
 	ofs << "\t\t\"total_bases\": " << mBase << "," << endl;
@@ -100,4 +111,49 @@ void Stats::print() {
 			break;
 		cerr << "    Fragments with " << i << " duplicates: " << mSupportingHistgram[i] << endl;
 	}
+}
+
+string Stats::list2string(double* list, int size) {
+    stringstream ss;
+    for(int i=0; i<size; i++) {
+        ss << list[i];
+        if(i < size-1)
+            ss << ",";
+    }
+    return ss.str();
+}
+
+string Stats::list2string(double* list, int size, long* coords) {
+    stringstream ss;
+    for(int i=0; i<size; i++) {
+        // coords is 1,2,3,...
+        long start = 0;
+        if(i>0)
+            start = coords[i-1];
+        long end = coords[i];
+
+        double total = 0.0;
+        for(int k=start; k<end; k++)
+            total += list[k];
+
+        // get average
+        if(end == start)
+            ss << "0.0";
+        else
+            ss << total / (end - start);
+        //ss << list[coords[i]-1];
+        if(i < size-1)
+            ss << ",";
+    }
+    return ss.str();
+}
+
+string Stats::list2string(long* list, int size) {
+    stringstream ss;
+    for(int i=0; i<size; i++) {
+        ss << list[i];
+        if(i < size-1)
+            ss << ",";
+    }
+    return ss.str();
 }

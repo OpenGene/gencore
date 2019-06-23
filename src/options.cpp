@@ -30,6 +30,8 @@ Options::Options(){
 
     baseScoreReq = scoreOfNotOverlapped;
     skipLowComplexityClusterThreshold = 1000;
+
+    reportTitle = "gencore report";
 }
 
 bool Options::validate() {

@@ -10,6 +10,8 @@
 #include <iostream>
 #include <fstream>
 
+#define MAX_SUPPORTING_READS 100
+
 class Stats{
 public:
     Stats(Options* opt);
@@ -20,25 +22,33 @@ public:
     void print();
     long getMappedBases();
     long getMappedReads();
+    long getReads();
+    long getBases();
     void reportJSON(ofstream& ofs);
     double getMappingRate();
     double getDupRate();
     long getMolecules() {return mMolecule;}
+    double getMismatchRate();
 
-private:
+public:    
+	static string list2string(double* list, int size);
+    static string list2string(double* list, int size, long* coords);
+    static string list2string(long* list, int size);
+
+public:
+    long mReadWithMismatches;
+    long mCluster;
+    long mMultiMoleculeCluster;
+    long mMolecule;
+    long mMoleculeSE;
+    long mMoleculePE;
+    long* mSupportingHistgram;
 	Options* mOptions;
 	long mBase;
 	long mBaseMismatches;
 	long mBaseUnmapped;
 	long mRead;
 	long mReadUnmapped;
-	long mReadWithMismatches;
-	long mCluster;
-	long mMultiMoleculeCluster;
-	long mMolecule;
-	long mMoleculeSE;
-	long mMoleculePE;
-	long* mSupportingHistgram;
 };
 
 #endif

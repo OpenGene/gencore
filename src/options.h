@@ -21,6 +21,7 @@ public:
     string output;
     string refFile;
     string umiPrefix;
+    string reportTitle;
     int maxContig;
     bam_hdr_t* bamHeader;
     bool debug;
