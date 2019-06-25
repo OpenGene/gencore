@@ -9,6 +9,7 @@ Stats::Stats(Options* opt) {
 	memset(this, 0, sizeof(Stats));
 	mSupportingHistgram = new long[MAX_SUPPORTING_READS];
 	memset(mSupportingHistgram, 0, sizeof(long)*MAX_SUPPORTING_READS);
+	uncountedSupportingReads = 0;
 }
 
 Stats::~Stats() {
@@ -49,6 +50,8 @@ void Stats::addMolecule(unsigned int supportingReads, bool PE) {
 	mMolecule++;
 	if(supportingReads < MAX_SUPPORTING_READS)
 		mSupportingHistgram[supportingReads]++;
+	else
+		uncountedSupportingReads++;
 	if(PE)
 		mMoleculePE++;
 	else

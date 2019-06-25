@@ -52,6 +52,9 @@ public:
 
     // threshold for skipping low complexity cluster
     int skipLowComplexityClusterThreshold;
+
+    int coverageStep;
+    int bedCoverageStep;
 };
 
 #endif

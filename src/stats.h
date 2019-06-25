@@ -49,6 +49,7 @@ public:
 	long mBaseUnmapped;
 	long mRead;
 	long mReadUnmapped;
+    long uncountedSupportingReads;
 };
 
 #endif

@@ -32,6 +32,9 @@ Options::Options(){
     skipLowComplexityClusterThreshold = 1000;
 
     reportTitle = "gencore report";
+
+    bedCoverageStep = 10;
+    coverageStep = 10000;
 }
 
 bool Options::validate() {
