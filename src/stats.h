@@ -9,6 +9,7 @@
 #include "options.h"
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #define MAX_SUPPORTING_READS 100
 
@@ -29,6 +30,8 @@ public:
     double getDupRate();
     long getMolecules() {return mMolecule;}
     double getMismatchRate();
+    void makeGenomeDepthBuf();
+    void statDepth(int tid, int start, int len);
 
 public:    
 	static string list2string(double* list, int size);
@@ -50,6 +53,7 @@ public:
 	long mRead;
 	long mReadUnmapped;
     long uncountedSupportingReads;
+    vector<vector<long>> mGenomeDepth;
 };
 
 #endif

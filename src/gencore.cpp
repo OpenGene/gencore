@@ -67,6 +67,7 @@ void Gencore::outputPair(Pair* p) {
 
     if(p->mLeft) {
         mPostStats->addRead(p->mLeft->core.l_qseq, BamUtil::getED(p->mLeft));
+        mPostStats->statDepth(p->mLeft->core.tid, p->mLeft->core.pos, p->mLeft->core.l_qseq);
         if(sam_write1(mOutSam, mBamHeader, p->mLeft) <0) {
             cerr << "Writing failed, exiting..." << endl;
             exit(-1);
@@ -74,6 +75,7 @@ void Gencore::outputPair(Pair* p) {
     }
     if(p->mRight) {
         mPostStats->addRead(p->mRight->core.l_qseq, BamUtil::getED(p->mRight));
+        mPostStats->statDepth(p->mRight->core.tid, p->mRight->core.pos, p->mRight->core.l_qseq);
         if(sam_write1(mOutSam, mBamHeader, p->mRight) <0) {
             cerr << "Writing failed, exiting..." << endl;
             exit(-1);
@@ -101,6 +103,8 @@ void Gencore::consensus(){
 
     mBamHeader = sam_hdr_read(in);
     mOptions->bamHeader = mBamHeader;
+    mPreStats->makeGenomeDepthBuf();
+    mPostStats->makeGenomeDepthBuf();
     if (mBamHeader == NULL || mBamHeader->n_targets == 0) {
         cerr << "ERROR: this SAM file has no header " << mInput << endl;
         exit(-1);
@@ -155,7 +159,7 @@ void Gencore::consensus(){
         if(!BamUtil::isPrimary(b)) {
             continue;
         }
-
+        mPreStats->statDepth(b->core.tid, b->core.pos, b->core.l_qseq);
         addToCluster(b);
         b = bam_init1();
     }

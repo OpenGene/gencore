@@ -5,8 +5,8 @@
 
 
 Stats::Stats(Options* opt) {
-	mOptions = opt;
 	memset(this, 0, sizeof(Stats));
+	mOptions = opt;
 	mSupportingHistgram = new long[MAX_SUPPORTING_READS];
 	memset(mSupportingHistgram, 0, sizeof(long)*MAX_SUPPORTING_READS);
 	uncountedSupportingReads = 0;
@@ -14,6 +14,37 @@ Stats::Stats(Options* opt) {
 
 Stats::~Stats() {
 	delete[] mSupportingHistgram;
+}
+
+void Stats::makeGenomeDepthBuf() {
+	mGenomeDepth.clear();
+	for(int c=0; c<mOptions->bamHeader->n_targets; c++) {
+        long targetLen = mOptions->bamHeader->target_len[c];
+        long depthBufLen = 1 + targetLen / mOptions->coverageStep;
+        mGenomeDepth.push_back(vector<long>(depthBufLen, 0));
+	}
+}
+
+void Stats::statDepth(int tid, int start, int len) {
+	if(tid >= mGenomeDepth.size() || tid<0)
+		return;
+
+	int end = start + len;
+
+	int leftPos = start / mOptions->coverageStep;
+	int leftLen = start - leftPos * mOptions->coverageStep;
+	int rightPos = 1 + end / mOptions->coverageStep;
+	int rightLen = rightPos * mOptions->coverageStep - end;
+
+	if(rightPos >= mGenomeDepth[tid].size() || leftPos<0)
+		return;
+
+	mGenomeDepth[tid][leftPos] += leftLen;
+	mGenomeDepth[tid][rightPos] += rightLen;
+
+	for(int p=leftPos+1; p<rightPos; p++) {
+		mGenomeDepth[tid][p] += mOptions->coverageStep ;
+	}
 }
 
 long Stats::getMappedBases() {
@@ -93,7 +124,19 @@ void Stats::reportJSON(ofstream& ofs) {
 	for(int i=1; i<MAX_SUPPORTING_READS - 1; i++)
 		ofs << mSupportingHistgram[i] << ",";
 	ofs << mSupportingHistgram[MAX_SUPPORTING_READS-1];
-	ofs << "]" << endl;
+	ofs << "]," << endl;
+	ofs << "\t\t\"coverage_sampling\": " << mOptions->coverageStep << "," << endl;
+	ofs << "\t\t\"coverage\":{" << endl;
+	for(int c=0; c<mGenomeDepth.size();c++) {
+		string contig(mOptions->bamHeader->target_name[c]);
+		ofs << "\t\t\t\"" << contig << "\":[";
+	    ofs << list2string(mGenomeDepth[c].data(), mGenomeDepth[c].size());
+	    ofs << "]";
+        if(c!=mGenomeDepth.size() - 1)
+			ofs << ",";
+        ofs << endl;
+	}
+	ofs << "\t\t}" << endl;
 }
 
 void Stats::print() {
