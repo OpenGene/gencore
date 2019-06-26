@@ -126,19 +126,26 @@ void HtmlReporter::printSummary(ofstream& ofs,  Stats* preStats, Stats* postStat
     }
 }
 
-long getYCeiling(vector<long> list, int top) {
-    int size = 1 + list.size()/top;
+long HtmlReporter::getYCeiling(vector<vector<long>> list, int denominator) {
+    int size = 0;
+    for(int i=0; i<list.size(); i++) {
+        if(mOptions->maxContig == 0 || i <= mOptions->maxContig)
+            size += list[i].size();
+    }
+    size = 1 + size/denominator;
     long* topvalues = new long[size];
     memset(topvalues, 0, sizeof(long) * size);
-    for(int i=0; i<list.size(); i++) {
-        long v = list[i];
-        for(int j=size-1; j>=0; j--) {
-            if(v > topvalues[j]) {
-                for(int p=0; p<j;p++) {
-                    topvalues[p] = topvalues[p+1];
+    for(int x=0; x<list.size(); x++) {
+        for(int y=0; y<list[x].size();y++) {
+            long v = list[x][y];
+            for(int j=size-1; j>=0; j--) {
+                if(v > topvalues[j]) {
+                    for(int p=0; p<j;p++) {
+                        topvalues[p] = topvalues[p+1];
+                    }
+                    topvalues[j] = v;
+                    break;
                 }
-                topvalues[j] = v;
-                break;
             }
         }
     }
@@ -153,12 +160,12 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
             maxpos = preStats->mGenomeDepth[c].size();
         }
     }
+    // to avoid outliers in the figure
+    double ceilingY = (double)getYCeiling(preStats->mGenomeDepth, 500)/mOptions->coverageStep;
 
     ofs << "<div style='padding:5px;'><center><table style='border:0px;'><tr><td style='width:20px;background:red'></td><td style='border:0px;'>Before processing</td><td style='width:20px;background:blue'></td><td style='border:0px;'>After processing</td></tr></table></center></div>"<<endl;
 
     for(int c=0; c<preStats->mGenomeDepth.size();c++) {
-        // the top 1/100
-        double ceilingY = (double)getYCeiling(preStats->mGenomeDepth[c], 500)/mOptions->coverageStep;
 
         if(preStats->mGenomeDepth[c].size() * 100 < maxpos)
             continue;

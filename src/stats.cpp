@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <sstream>
 #include "util.h"
+#include <math.h>
 
 
 Stats::Stats(Options* opt) {
@@ -32,18 +33,22 @@ void Stats::statDepth(int tid, int start, int len) {
 	int end = start + len;
 
 	int leftPos = start / mOptions->coverageStep;
-	int leftLen = start - leftPos * mOptions->coverageStep;
-	int rightPos = 1 + end / mOptions->coverageStep;
-	int rightLen = rightPos * mOptions->coverageStep - end;
+	int rightPos = end / mOptions->coverageStep;
 
 	if(rightPos >= mGenomeDepth[tid].size() || leftPos<0)
 		return;
 
-	mGenomeDepth[tid][leftPos] += leftLen;
-	mGenomeDepth[tid][rightPos] += rightLen;
+	if(leftPos == rightPos)
+		mGenomeDepth[tid][leftPos] += len;
+	else {
+		int leftLen = (leftPos+1) * mOptions->coverageStep - start;
+		int rightLen = end - rightPos * mOptions->coverageStep;
+		mGenomeDepth[tid][leftPos] += leftLen;
+		mGenomeDepth[tid][rightPos] += rightLen;
 
-	for(int p=leftPos+1; p<rightPos; p++) {
-		mGenomeDepth[tid][p] += mOptions->coverageStep ;
+		for(int p=leftPos+1; p<rightPos; p++) {
+			mGenomeDepth[tid][p] += mOptions->coverageStep ;
+		}
 	}
 }
 
@@ -125,12 +130,15 @@ void Stats::reportJSON(ofstream& ofs) {
 		ofs << mSupportingHistgram[i] << ",";
 	ofs << mSupportingHistgram[MAX_SUPPORTING_READS-1];
 	ofs << "]," << endl;
-	ofs << "\t\t\"coverage_sampling\": " << mOptions->coverageStep << "," << endl;
 	ofs << "\t\t\"coverage\":{" << endl;
 	for(int c=0; c<mGenomeDepth.size();c++) {
 		string contig(mOptions->bamHeader->target_name[c]);
 		ofs << "\t\t\t\"" << contig << "\":[";
-	    ofs << list2string(mGenomeDepth[c].data(), mGenomeDepth[c].size());
+		long* buf = new long[mGenomeDepth[c].size()];
+		for(int i=0; i<mGenomeDepth[c].size(); i++)
+			buf[i] = round((double)mGenomeDepth[c][i]/mOptions->coverageStep);
+	    ofs << list2string(buf, mGenomeDepth[c].size());
+	    delete[] buf;
 	    ofs << "]";
         if(c!=mGenomeDepth.size() - 1)
 			ofs << ",";
