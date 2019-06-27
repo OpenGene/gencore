@@ -116,7 +116,7 @@ void HtmlReporter::printSummary(ofstream& ofs,  Stats* preStats, Stats* postStat
     }
 
     if(mOptions->hasBedFile) {
-        ofs << "<div class='section_div' style='margin-top:50px;'>\n";
+        ofs << "<div class='section_div'>\n";
         ofs << "<div class='section_title' onclick=showOrHide('coverage_bed')><a name='coverage_bed'>Coverage statistics in BED:" << mOptions->bedFile << " </a></div>\n";
         ofs << "<div id='coverage_bed'>\n";
 
@@ -197,7 +197,7 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
 
 
         ofs << "<div class='coverage_div' id='coverage_" + contig +"'>\n";
-        ofs << "<div class='coverage_figure' id='plot_coverage_" + contig + "' style='width:" + to_string(w) + "%;height:180px;'></div>\n";
+        ofs << "<div class='coverage_figure' id='plot_coverage_" + contig + "' style='width:" + to_string(w) + "%;height:80px;'></div>\n";
         ofs << "</div>\n";
         
         ofs << "\n<script type=\"text/javascript\">" << endl;
@@ -223,7 +223,7 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
 
         json_str += "];\n";
 
-        json_str += "var layout={margin: {l: 50,r: 50,b: 50,t: 50,pad: 4}, showlegend: false, yaxis:{title:'" + contig + "', range:[" + to_string(-ceilingY) + ", " + to_string(ceilingY)+ "]}};\n";
+        json_str += "var layout={margin: {l: 50,r: 50,b:30,t: 5,pad: 2}, showlegend: false, yaxis:{title:'" + contig + "', range:[" + to_string(-ceilingY) + ", " + to_string(ceilingY)+ "]}};\n";
         json_str += "Plotly.newPlot('plot_coverage_" + contig + "', data, layout);\n";
 
         ofs << json_str;
@@ -253,6 +253,9 @@ void HtmlReporter::reportCoverageBed(ofstream& ofs, Stats* preStats, Stats* post
 
     for(int c=0; c<preBed.size();c++) {
 
+        if(preBed[c].size() == 0)
+            continue;
+
         double w = 5.0 + 95.0 * max(maxpos/100.0, (double)preBed[c].size()) / maxpos;
         string contig(mOptions->bamHeader->target_name[c]);
 
@@ -263,7 +266,7 @@ void HtmlReporter::reportCoverageBed(ofstream& ofs, Stats* preStats, Stats* post
         int total = preBed[c].size();
 
         ofs << "<div class='bed_coverage_div' id='bed_coverage_" + contig +"'>\n";
-        ofs << "<div class='coverage_figure' id='bed_plot_coverage_" + contig + "' style='width:" + to_string(w) + "%;height:280px;'></div>\n";
+        ofs << "<div class='coverage_figure' id='bed_plot_coverage_" + contig + "' style='width:" + to_string(w) + "%;height:250px;'></div>\n";
         ofs << "</div>\n";
         
         ofs << "\n<script type=\"text/javascript\">" << endl;
@@ -289,7 +292,7 @@ void HtmlReporter::reportCoverageBed(ofstream& ofs, Stats* preStats, Stats* post
 
         json_str += "];\n";
 
-        json_str += "var layout={xaxis:{tickangle:60, tickfont:{size: 8,color: '#ac3f78'}}, showlegend: false, yaxis:{title:'" + contig + "', range:[" + to_string(-ceilingY2) + ", " + to_string(ceilingY1)+ "]}};\n";
+        json_str += "var layout={margin: {l: 50,r: 50,b: 150,t:5,pad: 2}, xaxis:{tickangle:60, tickfont:{size: 8,color: '#bc6f98'}}, showlegend: false, yaxis:{title:'" + contig + "', range:[" + to_string(-ceilingY2) + ", " + to_string(ceilingY1)+ "]}};\n";
         json_str += "Plotly.newPlot('bed_plot_coverage_" + contig + "', data, layout);\n";
 
         ofs << json_str;
@@ -443,7 +446,7 @@ void HtmlReporter::printCSS(ofstream& ofs){
     ofs << ".kmer_table {text-align:center;font-size:8px;padding:2px;}" << endl;
     ofs << ".kmer_table td{text-align:center;font-size:8px;padding:0px;color:#ffffff}" << endl;
     ofs << ".sub_section_tips {color:#999999;font-size:10px;padding-left:5px;padding-bottom:3px;}" << endl;
-    ofs << ".coverage_div {margin-bottom:-20px;}" << endl;
+    ofs << ".coverage_div {}" << endl;
     ofs << ".bed_coverage_div {}" << endl;
     ofs << "</style>" << endl;
 }
