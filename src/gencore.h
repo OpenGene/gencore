@@ -8,6 +8,7 @@
 #include "options.h"
 #include "cluster.h"
 #include "stats.h"
+#include "bed.h"
 #include <map>
 
 using namespace std;

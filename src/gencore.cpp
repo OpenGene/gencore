@@ -104,7 +104,10 @@ void Gencore::consensus(){
     mBamHeader = sam_hdr_read(in);
     mOptions->bamHeader = mBamHeader;
     mPreStats->makeGenomeDepthBuf();
+    mPreStats->makeBedStats();
     mPostStats->makeGenomeDepthBuf();
+    mPostStats->makeBedStats(mPreStats->mBedStats);
+
     if (mBamHeader == NULL || mBamHeader->n_targets == 0) {
         cerr << "ERROR: this SAM file has no header " << mInput << endl;
         exit(-1);

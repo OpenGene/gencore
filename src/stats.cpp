@@ -11,10 +11,13 @@ Stats::Stats(Options* opt) {
 	mSupportingHistgram = new long[MAX_SUPPORTING_READS];
 	memset(mSupportingHistgram, 0, sizeof(long)*MAX_SUPPORTING_READS);
 	uncountedSupportingReads = 0;
+	mBedStats = NULL;
 }
 
 Stats::~Stats() {
 	delete[] mSupportingHistgram;
+	if(mBedStats)
+		delete mBedStats;
 }
 
 void Stats::makeGenomeDepthBuf() {
@@ -26,7 +29,18 @@ void Stats::makeGenomeDepthBuf() {
 	}
 }
 
+void Stats::makeBedStats(Bed* other) {
+	mBedStats = new Bed(mOptions);
+	if(other == NULL)
+		mBedStats->loadFromFile();
+	else
+		mBedStats->copyFrom(other);
+}
+
 void Stats::statDepth(int tid, int start, int len) {
+	if(mOptions->hasBedFile)
+		mBedStats->statDepth(tid, start, len);
+
 	if(tid >= mGenomeDepth.size() || tid<0)
 		return;
 
@@ -145,6 +159,10 @@ void Stats::reportJSON(ofstream& ofs) {
         ofs << endl;
 	}
 	ofs << "\t\t}" << endl;
+
+	if(mOptions->hasBedFile) {
+		mBedStats->reportJSON(ofs);
+	}
 }
 
 void Stats::print() {

@@ -5,12 +5,14 @@ Options::Options(){
     input = "";
     output = "";
     refFile = "";
+    bedFile = "";
     umiPrefix = "";
     maxContig = 0;
     bamHeader = NULL;
     properReadsUmiDiffThreshold = 2;
     unproperReadsUmiDiffThreshold = 0;
     debug = false;
+    hasBedFile = false;
 
     scorePercentReq = 0.8;
     clusterSizeReq = 2;

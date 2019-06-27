@@ -20,11 +20,13 @@ public:
     string input;
     string output;
     string refFile;
+    string bedFile;
     string umiPrefix;
     string reportTitle;
     int maxContig;
     bam_hdr_t* bamHeader;
     bool debug;
+    bool hasBedFile;
     // json file
     string jsonFile;
     // html file

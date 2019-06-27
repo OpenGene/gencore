@@ -31,6 +31,7 @@ int main(int argc, char* argv[]){
     cmd.add<string>("in", 'i', "input sorted bam/sam file. STDIN will be read from if it's not specified", false, "-");
     cmd.add<string>("out", 'o', "output bam/sam file. STDOUT will be written to if it's not specified", false, "-");
     cmd.add<string>("ref", 'r', "reference fasta file name (should be an uncompressed .fa/.fasta file)", true, "");
+    cmd.add<string>("bed", 'b', "bed file to specify the capturing region, none by default", false, "");
     
     // UMI
     cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "");
@@ -57,6 +58,7 @@ int main(int argc, char* argv[]){
     opt.input = cmd.get<string>("in");
     opt.output = cmd.get<string>("out");
     opt.refFile = cmd.get<string>("ref");
+    opt.bedFile = cmd.get<string>("bed");
     opt.umiPrefix = cmd.get<string>("umi_prefix");
     opt.clusterSizeReq = cmd.get<int>("supporting_reads");
     opt.baseScoreReq = cmd.get<int>("score_threshold");

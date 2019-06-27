@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "bed.h"
 
 #define MAX_SUPPORTING_READS 100
 
@@ -31,6 +32,7 @@ public:
     long getMolecules() {return mMolecule;}
     double getMismatchRate();
     void makeGenomeDepthBuf();
+    void makeBedStats(Bed* other = NULL);
     void statDepth(int tid, int start, int len);
 
 public:    
@@ -54,6 +56,7 @@ public:
 	long mReadUnmapped;
     long uncountedSupportingReads;
     vector<vector<long>> mGenomeDepth;
+    Bed* mBedStats;
 };
 
 #endif
