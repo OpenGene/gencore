@@ -31,6 +31,7 @@ private:
     void printFooter(ofstream& ofs);
     void reportDuplication(ofstream& ofs, long* dupHist, Stats* preStats);
     void reportCoverage(ofstream& ofs, Stats* preStats, Stats* postStats);
+    void reportCoverageBed(ofstream& ofs, Stats* preStats, Stats* postStats);
     void reportInsertSize(ofstream& ofs, int isizeLimit);
     void printSummary(ofstream& ofs, Stats* preStats, Stats* postStats);
     long getYCeiling(vector<vector<long>> list, int denominator);

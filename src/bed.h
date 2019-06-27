@@ -52,6 +52,9 @@ public:
     void dump();
     void statDepth(int tid, int start, int len);
     void reportJSON(ofstream& ofs);
+    string getPlotX(int c);
+    string getPlotY(int c, bool negative = false);
+    vector<vector<long>> getDepthList();
 
 public:
     Options* mOptions;

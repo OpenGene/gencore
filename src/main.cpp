@@ -43,6 +43,7 @@ int main(int argc, char* argv[]){
     cmd.add<int>("high_qual", 0, "the threshold for a quality score to be considered as high quality. Default 30 means Q30.", false, 30);
     cmd.add<int>("moderate_qual", 0, "the threshold for a quality score to be considered as moderate quality. Default 20 means Q20.", false, 20);
     cmd.add<int>("low_qual", 0, "the threshold for a quality score to be considered as low quality. Default 15 means Q15.", false, 15);
+    cmd.add<int>("coverage_sampling", 0, "the sampling rate for genome scale coverage statistics. Default 20000 means 1/20000.", false, 2000);
 
     // reporting
     cmd.add<string>("json", 'j', "the json format report file name", false, "gencore.json");
@@ -67,6 +68,7 @@ int main(int argc, char* argv[]){
     opt.highQuality = cmd.get<int>("high_qual");
     opt.moderateQuality = cmd.get<int>("moderate_qual");
     opt.lowQuality = cmd.get<int>("low_qual");
+    opt.coverageStep = cmd.get<int>("coverage_sampling");
     opt.debug = cmd.exist("debug");
 
     // reporting

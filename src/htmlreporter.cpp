@@ -1,6 +1,7 @@
 #include "htmlreporter.h"
 #include <chrono>
 #include <memory.h>
+#include <math.h>
 #include "common.h"
 
 extern string command;
@@ -73,7 +74,7 @@ void HtmlReporter::printSummary(ofstream& ofs,  Stats* preStats, Stats* postStat
     ofs << "<div class='subsection_title' onclick=showOrHide('filtering_metrics')>Details</div>\n";
     ofs << "<div id='filtering_metrics'>\n";
     ofs << "<table class='summary_table'>\n";
-    outputTripleRow(ofs, "", "before filtering", "after filtering");
+    outputTripleRow(ofs, "", "before processing", "after processing");
     outputTripleRow(ofs, "total bases:", formatNumber(preStats->getBases()),formatNumber(postStats->getBases()) );
     outputTripleRow(ofs, "mapped bases:", formatNumber(preStats->getMappedBases()),formatNumber(postStats->getMappedBases()) );
     outputTripleRow(ofs, "total reads:", formatNumber(preStats->getReads()),formatNumber(postStats->getReads()) );
@@ -105,10 +106,21 @@ void HtmlReporter::printSummary(ofstream& ofs,  Stats* preStats, Stats* postStat
 
     if(true) {
         ofs << "<div class='section_div'>\n";
-        ofs << "<div class='section_title' onclick=showOrHide('coverage')><a name='coverage'>Coverage statistics</a></div>\n";
+        ofs << "<div class='section_title' onclick=showOrHide('coverage')><a name='coverage'>Coverage statistics in genome scale</a></div>\n";
         ofs << "<div id='coverage'>\n";
 
         reportCoverage(ofs, preStats, postStats);
+
+        ofs << "</div>\n";
+        ofs << "</div>\n";
+    }
+
+    if(mOptions->hasBedFile) {
+        ofs << "<div class='section_div' style='margin-top:50px;'>\n";
+        ofs << "<div class='section_title' onclick=showOrHide('coverage_bed')><a name='coverage_bed'>Coverage statistics in BED:" << mOptions->bedFile << " </a></div>\n";
+        ofs << "<div id='coverage_bed'>\n";
+
+        reportCoverageBed(ofs, preStats, postStats);
 
         ofs << "</div>\n";
         ofs << "</div>\n";
@@ -153,7 +165,6 @@ long HtmlReporter::getYCeiling(vector<vector<long>> list, int denominator) {
 }
 
 void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postStats) {
-    int fw = 1600;
     int maxpos = 0;
     for(int c=0; c<preStats->mGenomeDepth.size();c++) {
         if(preStats->mGenomeDepth[c].size() > maxpos) {
@@ -170,7 +181,7 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
         if(preStats->mGenomeDepth[c].size() * 100 < maxpos)
             continue;
 
-        double w = 100.0 * preStats->mGenomeDepth[c].size() / maxpos;
+        double w = 5.0 + 95.0 * preStats->mGenomeDepth[c].size() / maxpos;
         string contig(mOptions->bamHeader->target_name[c]);
 
         double* ybefore = new double[preStats->mGenomeDepth[c].size()];
@@ -197,7 +208,8 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
         json_str += "x:[" + Stats::list2string(x, total) + "],";
         json_str += "y:[" + Stats::list2string(ybefore, total) + "],";
         json_str += "name: 'before processing',";
-        json_str += "line:{color:'rgba(255,0, 0,1.0)', width:1}\n";
+        json_str += "fill: 'tozeroy',";
+        json_str += "line:{color:'rgb(255,0, 0)', width:1}\n";
         json_str += "},";
 
         // original
@@ -205,7 +217,8 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
         json_str += "x:[" + Stats::list2string(x, total) + "],";
         json_str += "y:[" + Stats::list2string(yafter, total) + "],";
         json_str += "name: 'after processing',";
-        json_str += "line:{color:'rgba(0, 0, 255,1.0)', width:1}\n";
+        json_str += "fill: 'tozeroy',";
+        json_str += "line:{color:'rgb(0, 0, 255)', width:1}\n";
         json_str += "}";
 
         json_str += "];\n";
@@ -219,6 +232,69 @@ void HtmlReporter::reportCoverage(ofstream& ofs, Stats* preStats, Stats* postSta
         delete[] ybefore;
         delete[] yafter;
         delete[] x;
+    }
+}
+
+void HtmlReporter::reportCoverageBed(ofstream& ofs, Stats* preStats, Stats* postStats) {
+    vector<vector<BedRegion>>& preBed = preStats->mBedStats->mContigRegions;
+    vector<vector<BedRegion>>& postBed = postStats->mBedStats->mContigRegions;
+
+    int maxpos = 0;
+    for(int c=0; c<preBed.size();c++) {
+        if(preBed[c].size() > maxpos) {
+            maxpos = preBed[c].size();
+        }
+    }
+    // to avoid outliers in the figure
+    long ceilingY1 = getYCeiling(preStats->mBedStats->getDepthList(), 500);
+    long ceilingY2 = getYCeiling(postStats->mBedStats->getDepthList(), 500);
+
+    ofs << "<div style='padding:5px;'><center><table style='border:0px;'><tr><td style='width:20px;background:red'></td><td style='border:0px;'>Before processing</td><td style='width:20px;background:blue'></td><td style='border:0px;'>After processing</td></tr></table></center></div>"<<endl;
+
+    for(int c=0; c<preBed.size();c++) {
+
+        double w = 5.0 + 95.0 * max(maxpos/100.0, (double)preBed[c].size()) / maxpos;
+        string contig(mOptions->bamHeader->target_name[c]);
+
+        double* ybefore = new double[preStats->mGenomeDepth[c].size()];
+        double* yafter = new double[preStats->mGenomeDepth[c].size()];
+        double* x = new double[preStats->mGenomeDepth[c].size()];
+
+        int total = preBed[c].size();
+
+        ofs << "<div class='bed_coverage_div' id='bed_coverage_" + contig +"'>\n";
+        ofs << "<div class='coverage_figure' id='bed_plot_coverage_" + contig + "' style='width:" + to_string(w) + "%;height:280px;'></div>\n";
+        ofs << "</div>\n";
+        
+        ofs << "\n<script type=\"text/javascript\">" << endl;
+        string json_str = "var data=[";
+
+        // original
+        json_str += "{";
+        json_str += "x:[" + preStats->mBedStats->getPlotX(c) + "],";
+        json_str += "y:[" + preStats->mBedStats->getPlotY(c) + "],";
+        json_str += "name: 'before processing',";
+        json_str += "fill: 'tozeroy',";
+        json_str += "line:{color:'rgb(255,0, 0)', width:1}\n";
+        json_str += "},";
+
+        // original
+        json_str += "{";
+        json_str += "x:[" + postStats->mBedStats->getPlotX(c) + "],";
+        json_str += "y:[" + postStats->mBedStats->getPlotY(c, true) + "],";
+        json_str += "name: 'after processing',";
+        json_str += "fill: 'tozeroy',";
+        json_str += "line:{color:'rgb(0, 0, 255)', width:1}\n";
+        json_str += "}";
+
+        json_str += "];\n";
+
+        json_str += "var layout={xaxis:{tickangle:60, tickfont:{size: 8,color: '#ac3f78'}}, showlegend: false, yaxis:{title:'" + contig + "', range:[" + to_string(-ceilingY2) + ", " + to_string(ceilingY1)+ "]}};\n";
+        json_str += "Plotly.newPlot('bed_plot_coverage_" + contig + "', data, layout);\n";
+
+        ofs << json_str;
+        ofs << "</script>" << endl;
+
     }
 }
 
@@ -255,7 +331,7 @@ void HtmlReporter::reportInsertSize(ofstream& ofs, int isizeLimit) {
     json_str += "x:[" + Stats::list2string(x, total) + "],";
     json_str += "y:[" + Stats::list2string(percents, total) + "],";
     json_str += "name: 'Percent (%)  ',";
-    json_str += "type:'bar',";
+    json_str += "";
     json_str += "line:{color:'rgba(128,0,128,1.0)', width:1}\n";
     json_str += "}";
 
@@ -302,12 +378,12 @@ void HtmlReporter::reportDuplication(ofstream& ofs, long* dupHist, Stats* preSta
         uncountedPercent = 100.0 * preStats->uncountedSupportingReads / allCount;
     }
 
-    json_str += "{";
+    json_str += "{type:'bar',";
     json_str += "x:[" + Stats::list2string(x, total) + "],";
     json_str += "y:[" + Stats::list2string(percents, total) + "],";
     json_str += "name: 'Read percent (%)  ',";
-    json_str += "type:'bar',";
-    json_str += "line:{color:'rgba(128,0,128,1.0)', width:1}\n";
+    json_str += "";
+    json_str += "line:{color:'rgba(128,0,128,1.0)'}\n";
     json_str += "},";
 
     json_str += "];\n";
@@ -368,6 +444,7 @@ void HtmlReporter::printCSS(ofstream& ofs){
     ofs << ".kmer_table td{text-align:center;font-size:8px;padding:0px;color:#ffffff}" << endl;
     ofs << ".sub_section_tips {color:#999999;font-size:10px;padding-left:5px;padding-bottom:3px;}" << endl;
     ofs << ".coverage_div {margin-bottom:-20px;}" << endl;
+    ofs << ".bed_coverage_div {}" << endl;
     ofs << "</style>" << endl;
 }
 

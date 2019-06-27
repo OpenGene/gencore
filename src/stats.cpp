@@ -144,6 +144,7 @@ void Stats::reportJSON(ofstream& ofs) {
 		ofs << mSupportingHistgram[i] << ",";
 	ofs << mSupportingHistgram[MAX_SUPPORTING_READS-1];
 	ofs << "]," << endl;
+	ofs << "\t\t\"coverage_sampling\": " << mOptions->coverageStep << "," << endl;
 	ofs << "\t\t\"coverage\":{" << endl;
 	for(int c=0; c<mGenomeDepth.size();c++) {
 		string contig(mOptions->bamHeader->target_name[c]);

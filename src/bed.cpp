@@ -1,5 +1,6 @@
 #include "bed.h"
 #include "util.h"
+#include <sstream>
 
 Bed::Bed(Options* opt) {
 	mOptions = opt;
@@ -17,6 +18,46 @@ void Bed::dump() {
 			mContigRegions[c][p].dump();
 		}
 	}
+}
+
+vector<vector<long>> Bed::getDepthList() {
+	vector<vector<long>> list;
+	for(int c=0; c<mContigRegions.size(); c++) {
+		list.push_back(vector<long>());
+		for(int p=0; p<mContigRegions[c].size(); p++) {
+			list[c].push_back(mContigRegions[c][p].getAvgDepth());
+		}
+	}
+	return list;
+}
+
+string Bed::getPlotX(int c) {
+	if(c >= mContigRegions.size())
+		return "";
+
+	stringstream ss;
+	for(int p=0; p<mContigRegions[c].size(); p++) {
+		ss << "\"" << mContigRegions[c][p].mName << " " << mContigRegions[c][p].mStart << "-" << mContigRegions[c][p].mEnd << "\"";
+		if(p!= mContigRegions[c].size()-1)
+			ss << ",";
+	}
+	return ss.str();
+}
+
+string Bed::getPlotY(int c, bool negative) {
+	if(c >= mContigRegions.size())
+		return "";
+
+	stringstream ss;
+	for(int p=0; p<mContigRegions[c].size(); p++) {
+		if(negative)
+			ss << "\"" << -mContigRegions[c][p].getAvgDepth() << "\"";
+		else
+			ss << "\"" << mContigRegions[c][p].getAvgDepth() << "\"";
+		if(p!= mContigRegions[c].size()-1)
+			ss << ",";
+	}
+	return ss.str();
 }
 
 void Bed::statDepth(int tid, int start, int len) {

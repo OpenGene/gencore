@@ -36,7 +36,7 @@ Options::Options(){
     reportTitle = "gencore report";
 
     bedCoverageStep = 10;
-    coverageStep = 10000;
+    coverageStep = 20000;
 }
 
 bool Options::validate() {
