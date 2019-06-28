@@ -18,9 +18,29 @@ This tool can eliminate the errors introduced by library preparation and sequenc
 
 `gencore` accepts a sorted BAM/SAM with its corresponding reference fasta as input, and outputs an unsorted BAM/SAM.
 
-# a quick example
+# Take a quick glance of the informative report
+* Sample HTML report: http://opengene.org/gencore/gencore.html
+* Sample JSON report: http://opengene.org/gencore/gencore.json
+
+# Try gencore to generate above reports
+* BAM file for testing: http://opengene.org/gencore/input.sorted.bam
+* BED file for testing: http://opengene.org/gencore/test.bed
+* Ref file for testing: ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Assembly/GRCh37-HG19_Broad_variant/Homo_sapiens_assembly19.fasta
+* Command for testing: `gencore -i input.sorted.bam -o output.bam -r Homo_sapiens_assembly19.fasta -b test.bed`
+* Then check the `gencore.html` and `gencore.json` in the working directory
+
+# quick examples
+The simplest way
 ```shell
 gencore -i input.sorted.bam -o output.bam -r hg19.fasta
+```
+With a BED file to specify the capturing regions
+```shell
+gencore -i input.sorted.bam -o output.bam -r hg19.fasta -b test.bed
+```
+Only output reads with >=2 supporting reads (useful for denoising by generating consensus reads with only duplicated reads)
+```shell
+gencore -i input.sorted.bam -o output.bam -r hg19.fasta -b test.bed -s 2
 ```
 
 # get gencore
@@ -134,14 +154,17 @@ options:
   -i, --in                   input sorted bam/sam file. STDIN will be read from if it's not specified (string [=-])
   -o, --out                  output bam/sam file. STDOUT will be written to if it's not specified (string [=-])
   -r, --ref                  reference fasta file name (should be an uncompressed .fa/.fasta file) (string)
+  -b, --bed                  bed file to specify the capturing region, none by default (string [=])
   -u, --umi_prefix           the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats. (string [=])
-  -s, --supporting_reads     only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 2. (int [=2])
+  -s, --supporting_reads     only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 1. (int [=1])
   -a, --ratio_threshold      if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8 (double [=0.8])
   -c, --score_threshold      if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6 (int [=6])
       --high_qual            the threshold for a quality score to be considered as high quality. Default 30 means Q30. (int [=30])
       --moderate_qual        the threshold for a quality score to be considered as moderate quality. Default 20 means Q20. (int [=20])
       --low_qual             the threshold for a quality score to be considered as low quality. Default 15 means Q15. (int [=15])
+      --coverage_sampling    the sampling rate for genome scale coverage statistics. Default 10000 means 1/10000. (int [=10000])
   -j, --json                 the json format report file name (string [=gencore.json])
+  -h, --html                 the html format report file name (string [=gencore.html])
       --debug                output some debug information to STDERR.
       --quit_after_contig    stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation. (int [=0])
   -?, --help                 print this message

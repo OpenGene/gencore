@@ -37,13 +37,13 @@ int main(int argc, char* argv[]){
     cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "");
     
     // thresholds
-    cmd.add<int>("supporting_reads", 's', "only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 2.", false, 2);
+    cmd.add<int>("supporting_reads", 's', "only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 1.", false, 1);
     cmd.add<double>("ratio_threshold", 'a', "if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8", false, 0.8);
     cmd.add<int>("score_threshold", 'c', "if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6", false, 6);
     cmd.add<int>("high_qual", 0, "the threshold for a quality score to be considered as high quality. Default 30 means Q30.", false, 30);
     cmd.add<int>("moderate_qual", 0, "the threshold for a quality score to be considered as moderate quality. Default 20 means Q20.", false, 20);
     cmd.add<int>("low_qual", 0, "the threshold for a quality score to be considered as low quality. Default 15 means Q15.", false, 15);
-    cmd.add<int>("coverage_sampling", 0, "the sampling rate for genome scale coverage statistics. Default 20000 means 1/20000.", false, 2000);
+    cmd.add<int>("coverage_sampling", 0, "the sampling rate for genome scale coverage statistics. Default 10000 means 1/10000.", false, 10000);
 
     // reporting
     cmd.add<string>("json", 'j', "the json format report file name", false, "gencore.json");

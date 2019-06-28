@@ -117,7 +117,7 @@ void HtmlReporter::printSummary(ofstream& ofs,  Stats* preStats, Stats* postStat
 
     if(mOptions->hasBedFile) {
         ofs << "<div class='section_div'>\n";
-        ofs << "<div class='section_title' onclick=showOrHide('coverage_bed')><a name='coverage_bed'>Coverage statistics in BED:" << mOptions->bedFile << " </a></div>\n";
+        ofs << "<div class='section_title' onclick=showOrHide('coverage_bed')><a name='coverage_bed'>Coverage statistics in BED:<font size=-2>" << mOptions->bedFile << "</font> </a></div>\n";
         ofs << "<div id='coverage_bed'>\n";
 
         reportCoverageBed(ofs, preStats, postStats);

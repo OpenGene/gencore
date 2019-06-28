@@ -1,6 +1,7 @@
 #include "bed.h"
 #include "util.h"
 #include <sstream>
+#include <string.h>
 
 Bed::Bed(Options* opt) {
 	mOptions = opt;

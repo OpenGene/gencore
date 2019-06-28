@@ -15,7 +15,7 @@ Options::Options(){
     hasBedFile = false;
 
     scorePercentReq = 0.8;
-    clusterSizeReq = 2;
+    clusterSizeReq = 1;
 
     highQuality = 30;
     moderateQuality = 20;
@@ -36,7 +36,7 @@ Options::Options(){
     reportTitle = "gencore report";
 
     bedCoverageStep = 10;
-    coverageStep = 20000;
+    coverageStep = 10000;
 }
 
 bool Options::validate() {
