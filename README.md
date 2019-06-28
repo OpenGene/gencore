@@ -32,7 +32,7 @@ This tool can eliminate the errors introduced by library preparation and sequenc
 ```shell
 gencore -i input.sorted.bam -o output.bam -r Homo_sapiens_assembly19.fasta -b test.bed --coverage_sampling=50000
 ```
-* After the processing is finished, check the `gencore.html` and `gencore.json` in the working directory. The option `--coverage_sampling=50000` is to change the default setting (coverage_sampling=10000) to generate smaller report files by reduce coverage sampling rate.
+* After the processing is finished, check the `gencore.html` and `gencore.json` in the working directory. The option `--coverage_sampling=50000` is to change the default setting `(coverage_sampling=10000)` to generate smaller report files by reducing the coverage sampling rate.
 
 # quick examples
 The simplest way
@@ -87,13 +87,13 @@ As described above, gencore can eliminate the errors introduced by library prepa
 # QC result reported by gencore
 gencore also performs some quality control when processing deduplication and generating consensus reads. Basically it reports mapping rate, duplication rate, mismatch rate and some statisticical results. Especially, gencore reports the coverate statistics of input BAM file in genome scale, and in capturing regions (if a BED file is specified).
 
-gencore reports the results both in HTML format and JSON format for manually checking and downstream analysis. See the examples of interactive [HTML](http://opengene.org/gencore/gencore.html) report and [JSON](http://opengene.org/gencore/gencore.html) reports.
+gencore reports the results both in HTML format and JSON format for manually checking and downstream analysis. See the examples of interactive [HTML](http://opengene.org/gencore/gencore.html) report and [JSON](http://opengene.org/gencore/gencore.json) reports.
 
 ## coverate statistics in genome scale
-![image](http://www.opengene.org/gencore/coverage-genome.png) 
+![image](http://www.opengene.org/gencore/coverage-genome.jpeg) 
 
 ## coverate statistics in capturing regions
-![image](http://www.opengene.org/gencore/coverage-bed.png) 
+![image](http://www.opengene.org/gencore/coverage-bed.jpeg) 
 
 
 # how it works
