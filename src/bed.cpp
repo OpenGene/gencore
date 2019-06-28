@@ -79,7 +79,6 @@ void Bed::statDepth(int tid, int start, int len) {
 }
 
 void Bed::reportJSON(ofstream& ofs) {
-	ofs << "," << endl;
 	ofs << "\t\t\"coverage_bed\":{" << endl;
 	for(int c=0; c<mContigRegions.size();c++) {
 		string contig(mOptions->bamHeader->target_name[c]);

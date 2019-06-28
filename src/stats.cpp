@@ -159,11 +159,13 @@ void Stats::reportJSON(ofstream& ofs) {
 			ofs << ",";
         ofs << endl;
 	}
-	ofs << "\t\t}" << endl;
+	ofs << "\t\t}";
 
 	if(mOptions->hasBedFile) {
+		ofs << "," << endl;
 		mBedStats->reportJSON(ofs);
-	}
+	} else
+		ofs << endl;
 }
 
 void Stats::print() {

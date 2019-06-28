@@ -1,4 +1,4 @@
-A tool to GENerate COnsensus REads.
+A fast tool to remove sequencing duplications and eliminate sequencing errors by generating consensus reads.
 * [What's gencore](#whats-gencore)
 * [A quick example](#a-quick-example)
 * [Download, compile and install](#get-gencore)
@@ -10,24 +10,29 @@ A tool to GENerate COnsensus REads.
 * [Read/cite gencore paper](#citation)
 
 # what's gencore?
-`gencore` is a tool to generate consensus reads from next-generation sequencing (NGS) data. It groups the reads derived from the same original DNA template, merges them and generates a consensus read, which contains much less errors than the original reads.
+`gencore` is a tool for fast and powerful deduplication for next-generation sequencing (NGS) data. It is much faster and uses much less memory than Picard and other tools. It generates very informative reports in both HTML and JSON formats. It's based on an algorithm for `generating consensus reads`, and that's why it's named `gencore`.
 
-This tool groups the reads of same origin by their mapping positions and unique molecular identifiers (UMI). It can run with or without UMI. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
+Basically, `gencore` groups the reads derived from the same original DNA template, merges them by generating a consensus read, which contains much less errors than the original reads.
+
+`gencore` supports the data with unique molecular identifiers (UMI). If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names, and use `gencore` to generate consensus reads.
 
 This tool can eliminate the errors introduced by library preparation and sequencing processes, and consenquently reduce the false positives for downstream variant calling. This tool can also be used to remove duplicated reads. Since it generates consensus reads from duplicated reads, it outputs much cleaner data than conventional duplication remover. ***Due to these advantages, it is especially useful for processing ultra-deep sequencing data for cancer samples.***
 
 `gencore` accepts a sorted BAM/SAM with its corresponding reference fasta as input, and outputs an unsorted BAM/SAM.
 
-# Take a quick glance of the informative report
+# take a quick glance of the informative report
 * Sample HTML report: http://opengene.org/gencore/gencore.html
 * Sample JSON report: http://opengene.org/gencore/gencore.json
 
-# Try gencore to generate above reports
+# try gencore to generate above reports
 * BAM file for testing: http://opengene.org/gencore/input.sorted.bam
 * BED file for testing: http://opengene.org/gencore/test.bed
-* Ref file for testing: ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Assembly/GRCh37-HG19_Broad_variant/Homo_sapiens_assembly19.fasta
-* Command for testing: `gencore -i input.sorted.bam -o output.bam -r Homo_sapiens_assembly19.fasta -b test.bed`
-* Then check the `gencore.html` and `gencore.json` in the working directory
+* Reference genome file: [ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Assembly/GRCh37-HG19_Broad_variant/Homo_sapiens_assembly19.fasta](ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Assembly/GRCh37-HG19_Broad_variant/Homo_sapiens_assembly19.fasta)
+* Command for testing: 
+```shell
+gencore -i input.sorted.bam -o output.bam -r Homo_sapiens_assembly19.fasta -b test.bed --coverage_sampling=50000
+```
+* After the processing is finished, check the `gencore.html` and `gencore.json` in the working directory. The option `--coverage_sampling=50000` is to change the default setting (coverage_sampling=10000) to generate smaller report files by reduce coverage sampling rate.
 
 # quick examples
 The simplest way
@@ -38,7 +43,7 @@ With a BED file to specify the capturing regions
 ```shell
 gencore -i input.sorted.bam -o output.bam -r hg19.fasta -b test.bed
 ```
-Only output reads with >=2 supporting reads (useful for denoising by generating consensus reads with only duplicated reads)
+Only output the fragment with >=2 supporting reads (useful for aggressive denoising)
 ```shell
 gencore -i input.sorted.bam -o output.bam -r hg19.fasta -b test.bed -s 2
 ```
@@ -78,6 +83,17 @@ As described above, gencore can eliminate the errors introduced by library prepa
 ![image](http://www.opengene.org/gencore/processed.png)   
 
 ***This is the image showing the result of gencore processed BAM. It becomes much cleaner. Cheers!***
+
+# QC result reported by gencore
+gencore also performs some quality control when processing deduplication and generating consensus reads. Basically it reports mapping rate, duplication rate, mismatch rate and some statisticical results. Especially, gencore reports the coverate statistics of input BAM file in genome scale, and in capturing regions (if a BED file is specified).
+
+gencore reports the results both in HTML format and JSON format for manually checking and downstream analysis. See the examples of interactive [HTML](http://opengene.org/gencore/gencore.html) report and [JSON](http://opengene.org/gencore/gencore.html) reports.
+
+## coverate statistics in genome scale
+![image](http://www.opengene.org/gencore/coverage-genome.png) 
+
+## coverate statistics in capturing regions
+![image](http://www.opengene.org/gencore/coverage-bed.png) 
 
 
 # how it works
