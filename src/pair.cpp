@@ -285,9 +285,13 @@ bool Pair::isDupWith(Pair* other) {
 
 void Pair::dump() {
     cerr << "merged by " << mMergeReads << " reads, diff (" << mMergeLeftDiff << ", " << mMergeRightDiff << ")" << endl;
-    if(mLeft)
+    if(mLeft){
+        cerr << "left:" << endl;
         BamUtil::dump(mLeft);
-    if(mRight)
+    }
+    if(mRight) {
+        cerr << "right:" << endl;
         BamUtil::dump(mRight);
+    }
 }
 

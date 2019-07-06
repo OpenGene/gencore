@@ -9,9 +9,33 @@
 #include "cluster.h"
 #include "stats.h"
 #include "bed.h"
+#include "htslib/sam.h"
 #include <map>
+#include <set>
 
 using namespace std;
+
+struct bamComp{
+    bool operator()(const bam1_t* b1, const bam1_t* b2) const {
+        if(b1->core.tid >= 0) {        // b1 is mapped
+            if(b2->core.tid<0 )
+                return true;
+            else if(b2->core.tid > b1->core.tid)
+                return true;
+            else if(b2->core.tid == b1->core.tid && (b2->core.pos <0 || b2->core.pos > b1->core.pos))
+                return true;
+            else if(b2->core.tid == b1->core.tid && b2->core.pos == b1->core.pos && (b2->core.mpos<0 || b2->core.mpos >= b1->core.mpos))
+                return true;
+            else
+                return false;
+        } else {         // b1 is unmapped
+            if(b2->core.tid<0)
+                return true;
+            else
+                return false;
+        }
+    }
+};
 
 class Gencore {
 public:
@@ -21,27 +45,35 @@ public:
     void consensus();
 
 private:
-	void releaseClusters(map<int, map<int, map<int, Cluster*>>>& clusters);
-	void dumpClusters(map<int, map<int, map<int, Cluster*>>>& clusters);
+	void releaseClusters(map<int, map<int, map<long, Cluster*>>>& clusters);
+	void dumpClusters(map<int, map<int, map<long, Cluster*>>>& clusters);
 	void addToCluster(bam1_t* b);
 	void addToProperCluster(bam1_t* b);
 	void addToUnProperCluster(bam1_t* b);
-	void createCluster(map<int, map<int, map<int, Cluster*>>>& clusters, int tid, int left, int right);
+	void createCluster(map<int, map<int, map<long, Cluster*>>>& clusters, int tid, int left, long right);
     void outputPair(Pair* p);
-    void finishConsensus(map<int, map<int, map<int, Cluster*>>>& clusters);
+    bool outputBam(bam1_t* b);
+    void finishConsensus(map<int, map<int, map<long, Cluster*>>>& clusters);
     void report();
+    void outputBam(bam1_t* b, bool isLeft);
+    void outputOutSet();
+    void writeBam(bam1_t* b);
 
 private:
     string mInput;
     string mOutput;
     Options *mOptions;
     // chrid:left:right
-    map<int, map<int, map<int, Cluster*>>> mProperClusters;
-    map<int, map<int, map<int, Cluster*>>> mUnProperClusters;
+    map<int, map<int, map<long, Cluster*>>> mProperClusters;
+    map<int, map<int, map<long, Cluster*>>> mUnProperClusters;
     bam_hdr_t *mBamHeader;
     samFile* mOutSam;
     Stats* mPreStats;
     Stats* mPostStats;
+    set<bam1_t*, bamComp> mOutSet;
+    bool mOutSetCleared;
+    int mProcessedTid;
+    int mProcessedPos;
 };
 
 #endif

@@ -605,24 +605,12 @@ void Cluster::addRead(bam1_t* b) {
     string qname = BamUtil::getQName(b);
     map<string, Pair*>::iterator iter = mPairs.find(qname);
 
-    if(b->core.isize > 0) {
-        if(iter!=mPairs.end()) {
-            delete iter->second;
-        }
-        Pair* p = new Pair(mOptions);
-        p->setLeft(b);
-        mPairs[qname]=p;
-        return;
-    }
-
-    if(iter!=mPairs.end())
+    if(iter!=mPairs.end()) {
         iter->second->setRight(b);
+    }
     else {
         Pair* p = new Pair(mOptions);
-        if(b->core.isize < 0)
-            p->setRight(b);
-        else
-            p->setLeft(b);
+        p->setLeft(b);
         mPairs[qname]=p;
     }
 }
