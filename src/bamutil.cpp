@@ -10,17 +10,17 @@ BamUtil::~BamUtil(){
 }
 
 void BamUtil::dump(bam1_t *b) {
-    cerr << b->core.tid << ":" << b->core.pos << ", M:" << b->core.mtid << ":" << b->core.mpos << " TLEN:" << b->core.isize << endl;
+    cerr << b->core.tid << ":" << b->core.pos << ", M:" << b->core.mtid << ":" << b->core.mpos << " TLEN:" << b->core.isize << " ID:" << b->id << endl;
     cerr << getQName(b) << " " << getCigar(b) << endl;
     cerr << getSeq(b) << endl;
     cerr << getQual(b) << endl;
 }
 
-string BamUtil::getQName(bam1_t *b) {
+string BamUtil::getQName(const bam1_t *b) {
     return string(bam_get_qname(b));
 }
 
-string BamUtil::getUMI(bam1_t *b, const string& prefix) {
+string BamUtil::getUMI(const bam1_t *b, const string& prefix) {
     return getUMI(string(bam_get_qname(b)), prefix);
 }
 
@@ -75,7 +75,7 @@ string BamUtil::getUMI(string qname, const string& prefix) {
     return qname.substr(start, len-start);
 }
 
-string BamUtil::getQual(bam1_t *b) {
+string BamUtil::getQual(const bam1_t *b) {
     uint8_t *data = bam_get_qual(b);
     int len = b->core.l_qseq;
     string s(len, '\0');
@@ -85,7 +85,7 @@ string BamUtil::getQual(bam1_t *b) {
     return s;
 }
 
-int BamUtil::getED(bam1_t* b) {
+int BamUtil::getED(const bam1_t* b) {
     const char tagNM[2] ={'N', 'M'};
     uint8_t* dataNM = (uint8_t*)bam_aux_get(b,tagNM);
     if(!dataNM)
@@ -94,7 +94,7 @@ int BamUtil::getED(bam1_t* b) {
     return valNM;
 }
 
-string BamUtil::getSeq(bam1_t *b) {
+string BamUtil::getSeq(const bam1_t *b) {
     uint8_t *data = bam_get_seq(b);
     int len = b->core.l_qseq;
     string s(len, '\0');
@@ -152,7 +152,7 @@ uint8_t BamUtil::base2fourbits(char base) {
  length of a CIGAR.
 */
 
-string BamUtil::getCigar(bam1_t *b) {
+string BamUtil::getCigar(const bam1_t *b) {
     uint32_t *data = (uint32_t *)bam_get_cigar(b);
     int cigarNum = b->core.n_cigar;
     stringstream ss;

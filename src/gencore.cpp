@@ -79,17 +79,22 @@ void Gencore::outputOutSet() {
 void Gencore::writeBam(bam1_t* b) {
     static int lastTid = -1;
     static int lastPos = -1;
+    static bool warnedUnordered = false;
     //BamUtil::dump(b);
     if(b->core.tid <lastTid || (b->core.tid == lastTid && b->core.pos <lastPos)) {
         // skip the -1:-1, which means unmapped
         if(b->core.tid >=0 && b->core.pos >= 0) {
-            cerr << "ERROR: the input is unsorted. Found " << b->core.tid << ":" << b->core.pos << " after " << lastTid << ":" << lastPos << endl;
+            if(!warnedUnordered) {
+                cerr << "WARNING: The output will be unordered!" << endl;
+                warnedUnordered = true;
+            }
+            /*cerr << "ERROR: the input is unsorted. Found " << b->core.tid << ":" << b->core.pos << " after " << lastTid << ":" << lastPos << endl;
             cerr << "Please sort the input first." << endl << endl;
             //BamUtil::dump(b);
-            //cerr << "mProcessedTid: " << mProcessedTid << endl;
-            //cerr << "mProcessedPos: " << mProcessedPos << endl;
+            cerr << "mProcessedTid: " << mProcessedTid << endl;
+            cerr << "mProcessedPos: " << mProcessedPos << endl;
             //dumpClusters(mProperClusters);
-            exit(-1);
+            exit(-1);*/
         }
     }
     if(sam_write1(mOutSam, mBamHeader, b) <0) {
@@ -97,12 +102,23 @@ void Gencore::writeBam(bam1_t* b) {
     }
     lastTid = b->core.tid;
     lastPos = b->core.pos;
+
+    mPostStats->addRead(b);
 }
 
 void Gencore::outputBam(bam1_t* b, bool isLeft) {
     pair<set<bam1_t*, bamComp>::iterator,bool> ret = mOutSet.insert(b);
+    //cerr << "inserting " << (b)->core.tid << ":" << (b)->core.pos << endl;
+    //cerr << "head " << (*mOutSet.begin())->core.tid << ":" << (*mOutSet.begin())->core.pos << endl;
+    //cerr << "tail " << (*mOutSet.rbegin())->core.tid << ":" << (*mOutSet.rbegin())->core.pos << endl;
     // pointing to its next
-    set<bam1_t*, bamComp>::iterator insertpos = ++ret.first;
+    if(ret.second == false) {
+        cerr << "OOPS, found two completely same reads" << endl;
+        BamUtil::dump(b);
+        BamUtil::dump(*ret.first);
+    }
+    set<bam1_t*, bamComp>::iterator insertpos = ret.first;
+    insertpos++;
     // if it's left, clear the output set less than it
     if(isLeft) {
         //BamUtil::dump(b);
@@ -110,8 +126,7 @@ void Gencore::outputBam(bam1_t* b, bool isLeft) {
         // write those bam less than coming left bam
         for(iter = mOutSet.begin(); iter!=insertpos; iter++) {
             // break since the reads in mProperClusters are smaller than this one
-            if((*iter)->core.tid<mProcessedTid || ((*iter)->core.tid == mProcessedTid && (*iter)->core.pos <= mProcessedPos)) {
-                iter++;
+            if(mProcessedPos == -1 || (*iter)->core.tid>mProcessedTid || ((*iter)->core.tid == mProcessedTid && (*iter)->core.pos >= mProcessedPos)) {
                 break;
             }
             writeBam(*iter);
@@ -130,14 +145,10 @@ void Gencore::outputPair(Pair* p) {
         return ;
 
     if(p->mLeft) {
-        mPostStats->addRead(p->mLeft->core.l_qseq, BamUtil::getED(p->mLeft));
-        mPostStats->statDepth(p->mLeft->core.tid, p->mLeft->core.pos, p->mLeft->core.l_qseq);
         outputBam(p->mLeft, true);
         p->mLeft =  NULL;
     }
     if(p->mRight) {
-        mPostStats->addRead(p->mRight->core.l_qseq, BamUtil::getED(p->mRight));
-        mPostStats->statDepth(p->mRight->core.tid, p->mRight->core.pos, p->mRight->core.l_qseq);
         outputBam(p->mRight, false);
         // right bam will be put in the mOutSet, so make it NULL to avoid being deleted
         p->mRight =  NULL;
@@ -186,6 +197,7 @@ void Gencore::consensus(){
     int lastTid = -1;
     int lastPos = -1;
     while ((r = sam_read1(in, mBamHeader, b)) >= 0) {
+        mPreStats->addRead(b);
         // check whether the BAM is sorted
         if(b->core.tid <lastTid || (b->core.tid == lastTid && b->core.pos <lastPos)) {
             // skip the -1:-1, which means unmapped
@@ -215,8 +227,6 @@ void Gencore::consensus(){
                 finishConsensus(mProperClusters);
                 outputOutSet();
             }
-            mPreStats->addRead(b->core.l_qseq, 0, false);
-            mPostStats->addRead(b->core.l_qseq, 0, false);
             //writeBam(b);
             continue;
         }
@@ -225,7 +235,6 @@ void Gencore::consensus(){
         if(!BamUtil::isPrimary(b)) {
             continue;
         }
-        mPreStats->statDepth(b->core.tid, b->core.pos, b->core.l_qseq);
         addToCluster(b);
         b = bam_init1();
     }
@@ -256,13 +265,12 @@ void Gencore::addToProperCluster(bam1_t* b) {
         }
         right = left + abs(b->core.isize) -  1;
     } else { // cross contig, we only process this read, but dont process its mate
-        left = b->core.pos;
         // no mate or mate is not mapped, we cannot remove duplication or make consensus read, so just write it
         if(b->core.mtid < 0) {
             outputBam(b, true);
             return;
-        } else {
-            right = -mBamHeader->target_len[b->core.tid] * (b->core.mtid+1) + b->core.mpos;
+        } else { // cross contig pair mapping
+            right = -1L * (long)mBamHeader->target_len[b->core.tid] * (long)(b->core.mtid+1) + (long)b->core.mpos;
         }
     }
 
@@ -281,15 +289,23 @@ void Gencore::addToProperCluster(bam1_t* b) {
     map<long, Cluster*>::iterator iter3;
     bool needBreak = false;
     // to mark the smallest tid in the set
-    mProcessedTid = mBamHeader->n_targets;
+    int curProcessedTid = mBamHeader->n_targets;
+    int curProcessedPos = -1;
     int processedPos;
     for(iter1 = mProperClusters.begin(); iter1 != mProperClusters.end();) {
-        if(iter1->first > tid || needBreak)
+        if(iter1->first > tid || needBreak) {
+            if(curProcessedTid > iter1->first) {
+                curProcessedTid = iter1->first;
+                curProcessedPos = processedPos;
+            }
             break;
+        }
         // to mark the smallest pos in this set
-        processedPos =mBamHeader->target_len[tid];
+        processedPos =mBamHeader->target_len[iter1->first];
         for(iter2 = iter1->second.begin(); iter2 != iter1->second.end(); ) {
             if(iter1->first == tid && iter2->first >= b->core.pos) {
+                if(processedPos > iter2->first)
+                    processedPos = iter2->first;
                 needBreak = true;
                 break;
             }
@@ -298,7 +314,7 @@ void Gencore::addToProperCluster(bam1_t* b) {
                 if(iter1->first == tid && iter3->first >= b->core.pos) {
                     break;
                 }
-                vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->properReadsUmiDiffThreshold, mPreStats, mPostStats);
+                vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->properReadsUmiDiffThreshold, mPreStats, mPostStats, iter3->first < 0);
                 for(int i=0; i<csPairs.size(); i++) {
                     //csPairs[i]->dump();
                     outputPair(csPairs[i]);
@@ -320,14 +336,17 @@ void Gencore::addToProperCluster(bam1_t* b) {
         // this tid is done
         if(iter1->second.size() == 0) {
             iter1 = mProperClusters.erase(iter1);
+            curProcessedPos = processedPos;
         } else {
-            if(mProcessedTid > iter1->first) {
-                mProcessedTid = iter1->first;
-                mProcessedPos = processedPos;
+            if(curProcessedTid > iter1->first) {
+                curProcessedTid = iter1->first;
+                curProcessedPos = processedPos;
             }
             iter1++;
         }
     }
+    mProcessedTid = curProcessedTid;
+    mProcessedPos = curProcessedPos;
 }
 
 void Gencore::finishConsensus(map<int, map<int, map<long, Cluster*>>>& clusters) {
@@ -339,7 +358,7 @@ void Gencore::finishConsensus(map<int, map<int, map<long, Cluster*>>>& clusters)
         for(iter2 = iter1->second.begin(); iter2 != iter1->second.end(); ) {
             for(iter3 = iter2->second.begin(); iter3 != iter2->second.end(); ) {
                 // for unmapped reads, we just store them
-                if(iter1->first < 0 || iter2->first < 0 || iter3->first < 0 ) {
+                if(iter1->first < 0 || iter2->first < 0 ) {
                     map<string, Pair*>::iterator iterOfPairs;
                     for(iterOfPairs = iter3->second->mPairs.begin(); iterOfPairs!=iter3->second->mPairs.end(); iterOfPairs++) {
                         //csPairs[i]->dump();
@@ -347,7 +366,7 @@ void Gencore::finishConsensus(map<int, map<int, map<long, Cluster*>>>& clusters)
                         delete iterOfPairs->second;
                     }
                 } else {
-                    vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->unproperReadsUmiDiffThreshold, mPreStats, mPostStats);
+                    vector<Pair*> csPairs = iter3->second->clusterByUMI(mOptions->unproperReadsUmiDiffThreshold, mPreStats, mPostStats, iter3->first < 0);
                     for(int i=0; i<csPairs.size(); i++) {
                         //csPairs[i]->dump();
                         outputPair(csPairs[i]);
@@ -408,9 +427,9 @@ void Gencore::createCluster(map<int, map<int, map<long, Cluster*>>>& clusters, i
 }
 
 void Gencore::addToCluster(bam1_t* b) {
-    mPreStats->addRead(b->core.l_qseq, BamUtil::getED(b));
     // unproperly mapped
     if(b->core.tid < 0) {
+        // actually this will never happen since it would be written directly if it's unmapped
         addToUnProperCluster(b);
     } else {
         addToProperCluster(b);

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include "htslib/sam.h"
 
 using namespace std;

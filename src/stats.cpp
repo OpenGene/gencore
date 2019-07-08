@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <sstream>
 #include "util.h"
+#include "bamutil.h"
 #include <math.h>
 
 
@@ -82,18 +83,26 @@ long Stats::getBases() {
 	return mBase;
 }
 
-void Stats::addRead(int baseNum, int mismatch, bool mapped) {
-	mBase += baseNum;
+void Stats::addRead(bam1_t* b) {
+	bool mapped = (b->core.tid>=0);
+	int mismatch = 0;
+	if(mapped)
+		mismatch = BamUtil::getED(b);
+	mBase += b->core.l_qseq;
 	mRead++;
 	mBaseMismatches += mismatch;
 
 	if(!mapped) {
-		mBaseUnmapped += baseNum;
+		mBaseUnmapped += b->core.l_qseq;
 		mReadUnmapped++;
 	}
 
 	if(mismatch>0)
 		mReadWithMismatches++;
+
+	if(mapped) {
+		statDepth(b->core.tid, b->core.pos, b->core.l_qseq);
+	}
 }
 
 void Stats::addMolecule(unsigned int supportingReads, bool PE) {

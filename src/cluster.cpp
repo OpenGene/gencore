@@ -51,7 +51,7 @@ int Cluster::umiDiff(const string& umi1, const string& umi2) {
     return diff;
 }
     
-vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats* postStats) {
+vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats* postStats, bool crossContig) {
 	vector<Cluster*> subClusters;
     map<string, int> umiCount;
     map<string, Pair*>::iterator iterOfPairs;
@@ -104,7 +104,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
 	vector<Pair*> consensusPairs;
 
 	for(int i=0; i<subClusters.size(); i++) {
-		Pair* p = subClusters[i]->consensusMerge();
+		Pair* p = subClusters[i]->consensusMerge(crossContig);
         if(p->mMergeReads >= mOptions->clusterSizeReq)
 		  consensusPairs.push_back(p);
         else
@@ -120,15 +120,46 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
 	return consensusPairs;
 }
 
-Pair* Cluster::consensusMerge() {
+Pair* Cluster::consensusMerge(bool crossContig) {
     int leftDiff = 0;
     int rightDiff = 0;
+
+    bam1_t* nameToCopy = NULL;
+    if(crossContig) {
+        int curLen = 0;
+
+        map<string, Pair*>::iterator iter;
+        for(iter=mPairs.begin(); iter!=mPairs.end(); iter++) {
+            if(iter->second->mLeft == NULL)
+                continue;
+
+            if(nameToCopy == NULL) {
+                nameToCopy = iter->second->mLeft;
+                curLen = iter->second->mLeft->core.l_qname;
+                continue;
+            }
+
+            if(iter->second->mLeft->core.l_qname < curLen || (iter->second->mLeft->core.l_qname == curLen && strcmp(bam_get_qname(iter->second->mLeft), bam_get_qname(nameToCopy)) <0 )) {
+                nameToCopy = iter->second->mLeft;
+                curLen = iter->second->mLeft->core.l_qname;
+            }
+        }
+    }
+
     bam1_t* left = consensusMergeBam(true, leftDiff);
     bam1_t* right = consensusMergeBam(false, rightDiff);
 
     Pair *p = new Pair(mOptions);
     p->mMergeReads = mPairs.size();
-    if(left && right) {
+
+    // for cross-contig mapped reads, only left read is present
+    // to keep the PE relationship, we use the smallest name in the shortest read names
+    if(crossContig) {
+        if(left && nameToCopy && nameToCopy != left) {
+            BamUtil::copyQName(nameToCopy, left);
+        }
+
+    } else if(left && right) {
         string lname = BamUtil::getQName(left);
         string rname = BamUtil::getQName(right);
         // make qname consistent to keep pair relationship

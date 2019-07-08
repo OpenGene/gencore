@@ -14,12 +14,12 @@ public:
     ~BamUtil();
 
 public:
-    static string getQName(bam1_t *b);
+    static string getQName(const bam1_t *b);
     static string getUMI(string qname, const string& prefix);
-    static string getUMI(bam1_t *b, const string& prefix);
-    static string getSeq(bam1_t *b);
-    static string getQual(bam1_t *b);
-    static string getCigar(bam1_t *b);
+    static string getUMI(const bam1_t *b, const string& prefix);
+    static string getSeq(const bam1_t *b);
+    static string getQual(const bam1_t *b);
+    static string getCigar(const bam1_t *b);
     static char fourbits2base(uint8_t val);
     static uint8_t base2fourbits(char base);
     static void dump(bam1_t *b);
@@ -31,7 +31,7 @@ public:
     static bool isProperPair(bam1_t *b);
     static int getRightRefPos(bam1_t *b);
     static void getMOffsetAndLen(bam1_t *b, int& MOffset, int& MLen);
-    static int getED(bam1_t* b);
+    static int getED(const bam1_t* b);
 
     static bool test();
 

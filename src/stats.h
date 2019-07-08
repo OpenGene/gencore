@@ -18,7 +18,7 @@ class Stats{
 public:
     Stats(Options* opt);
     ~Stats();
-    void addRead(int baseNum, int mismatch, bool mapped=true);
+    void addRead(bam1_t* b);
     void addMolecule(unsigned int supportingReads, bool PE);
     void addCluster(bool hasMultiMolecule);
     void print();
