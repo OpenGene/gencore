@@ -10,7 +10,7 @@ A fast tool to remove sequencing duplications and eliminate sequencing errors by
 * [Read/cite gencore paper](#citation)
 
 # what's gencore?
-`gencore` is a tool for fast and powerful deduplication for next-generation sequencing (NGS) data. It is much faster and uses much less memory than Picard and other tools. It generates very informative reports in both HTML and JSON formats. It's based on an algorithm for `generating consensus reads`, and that's why it's named `gencore`.
+`gencore` is a tool for fast and powerful deduplication for paired-end next-generation sequencing (NGS) data. It is much faster and uses much less memory than Picard and other tools. It generates very informative reports in both HTML and JSON formats. It's based on an algorithm for `generating consensus reads`, and that's why it's named `gencore`.
 
 Basically, `gencore` groups the reads derived from the same original DNA template, merges them by generating a consensus read, which contains much less errors than the original reads.
 
