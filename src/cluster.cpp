@@ -124,6 +124,13 @@ Pair* Cluster::consensusMerge(bool crossContig) {
     int leftDiff = 0;
     int rightDiff = 0;
 
+    // in this case, no need to make consensus
+    if(mPairs.size()>=mOptions->clusterSizeReq && mPairs.size()==1 && mPairs.begin()->second->mRight == NULL) {
+        Pair* p = mPairs.begin()->second;
+        mPairs.clear();
+        return p;
+    }
+
     bam1_t* nameToCopy = NULL;
     if(crossContig) {
         int curLen = 0;
