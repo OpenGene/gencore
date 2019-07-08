@@ -196,8 +196,18 @@ void Gencore::consensus(){
     int count = 0;
     int lastTid = -1;
     int lastPos = -1;
+    bool hasPE = false;
     while ((r = sam_read1(in, mBamHeader, b)) >= 0) {
         mPreStats->addRead(b);
+        count++;
+        if(count < 1000) {
+            if(b->core.mtid >= 0)
+                hasPE = true;
+        }
+        if(count == 1000 && hasPE == false) {
+            cerr << "WARNING: seems that the input data is single-end, gencore will not make consensus read and remove duplication for SE data since grouping by coordination will be inaccurate." << endl << endl;
+        }
+
         // check whether the BAM is sorted
         if(b->core.tid <lastTid || (b->core.tid == lastTid && b->core.pos <lastPos)) {
             // skip the -1:-1, which means unmapped
