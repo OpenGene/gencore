@@ -269,7 +269,7 @@ void Gencore::addToProperCluster(bam1_t* b) {
     int left = b->core.pos;
     long right;
 
-    if(b->core.mtid == b->core.tid ) { // on same contig
+    if(b->core.mtid == b->core.tid && abs(b->core.mpos - b->core.pos) < 100000) { // process pair synchronously when they are on same contig without huge gap
         if(b->core.isize < 0) {
             left = b->core.mpos;
         }
