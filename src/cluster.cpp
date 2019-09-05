@@ -423,7 +423,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         }
     }
 
-    const char* refdata = NULL;
+    const unsigned char* refdata = NULL;
     if(out->core.isize != 0) {
         refdata = Reference::instance(mOptions)->getData(out->core.tid, out->core.pos, BamUtil::getRefOffset(out, len-1) + 1);
         if(refdata == NULL && mOptions->debug)
@@ -494,8 +494,9 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
         char refbase = 0;
         if(refdata) {
             int refpos = BamUtil::getRefOffset(out, i);
-            if(refpos >= 0)
-                refbase = refdata[refpos];
+            if(refpos >= 0) {
+                refbase = FastaReader::getBase(refdata, out->core.pos + refpos);
+            }
         }
 
         if(refbase!='A' && refbase!='T' && refbase!='C' && refbase!='G')
@@ -607,7 +608,7 @@ int Cluster::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& 
                 cerr << "Read name: " << BamUtil::getQName(out) << endl;
                 cerr << "tid: " << out->core.tid << ", pos: " << out->core.pos << endl;
                 if(refdata)
-                    cerr << "ref:" << endl << string(refdata, len) << endl;
+                    cerr << "ref:" << endl << FastaReader::toString(refdata, out->core.pos, len) << endl;
                 cerr << "css:" << endl << BamUtil::getSeq(out) << endl;
             }
 

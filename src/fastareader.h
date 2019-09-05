@@ -34,26 +34,30 @@ public:
         return mCurrentDescription;
     }
 
-    inline string currentSequence()
-    {
-        return mCurrentSequence;
-    }
-
-    inline map<string, string>& contigs() {
+    inline map<string, unsigned char*>& contigs() {
         return mAllContigs;
     }
 
+    static unsigned char base2bits(char base);
+    static char bits2base(unsigned char bits);
+    static unsigned char getBase(const unsigned char* refdata, int refpos);
+    static string toString(const unsigned char* refdata, int pos, int len);
+
 
 public:
-    string mCurrentSequence;
+    unsigned char* mCurrentSequence;
     string mCurrentID ;
     string mCurrentDescription;
-    map<string, string> mAllContigs;
+    long mCurrentSize;
+    map<string, unsigned char*> mAllContigs;
+    map<string, long> mAllContigSizes;
+
 
 private:
     bool readLine();
     bool endOfLine(char c);
     void setFastaSequenceIdDescription();
+    unsigned char* to4bits(const string& str);
 
 private:
     string mFastaFile;

@@ -14,7 +14,7 @@ class Reference
 public:
     ~Reference();
 
-    const char* getData(int contig, int pos, int len);
+    const unsigned char* getData(int contig, int pos, int len);
 
     static Reference* instance(Options* opt);
 
@@ -27,7 +27,7 @@ private:
     Options* mOptions;
     int mLastBamContig;
     int mLastLen;
-    const char* mLastData;
+    const unsigned char* mLastData;
 };
 
 
