@@ -186,6 +186,6 @@ options:
   -?, --help                 print this message
 ```
 # citation
-If you used gencore in your research work, please cite it as:
+The gencore paper has been published in  BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-3280-9. If you used gencore in your research work, please cite it as:
 
 Chen, S., Zhou, Y., Chen, Y. et al. Gencore: an efficient tool to generate consensus reads for error suppressing and duplicate removing of NGS data. BMC Bioinformatics 20, 606 (2019) doi:10.1186/s12859-019-3280-9
