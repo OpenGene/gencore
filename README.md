@@ -186,8 +186,6 @@ options:
   -?, --help                 print this message
 ```
 # citation
-An application note has been posted on bioRxiv for a brief instruction: http://biorxiv.org/cgi/content/short/501502v1. If you used gencore in your research work, please cite it as:
+If you used gencore in your research work, please cite it as:
 
-gencore: an efficient tool to generate consensus reads for error suppressing and duplicate removing of NGS data  
-Shifu Chen, Yanqing Zhou, Yaru Chen, Tanxiao Huang, Wenting Liao, Yun Xu, Zhihua Liu, Jia Gu
-bioRxiv 501502; doi: https://doi.org/10.1101/501502
+Chen, S., Zhou, Y., Chen, Y. et al. Gencore: an efficient tool to generate consensus reads for error suppressing and duplicate removing of NGS data. BMC Bioinformatics 20, 606 (2019) doi:10.1186/s12859-019-3280-9
