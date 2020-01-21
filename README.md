@@ -1,4 +1,7 @@
-A fast tool to remove sequencing duplications and eliminate sequencing errors by generating consensus reads.
+[![install with conda](
+https://anaconda.org/bioconda/gencore/badges/version.svg)](https://anaconda.org/bioconda/gencore)
+# gencore
+An efficient tool to remove sequencing duplications and eliminate sequencing errors by generating consensus reads.
 * [What's gencore](#whats-gencore)
 * [A quick example](#a-quick-example)
 * [Download, compile and install](#get-gencore)
@@ -49,6 +52,12 @@ gencore -i input.sorted.bam -o output.bam -r hg19.fasta -b test.bed -s 2
 ```
 
 # get gencore
+## install with Bioconda
+[![install with conda](
+https://anaconda.org/bioconda/gencore/badges/version.svg)](https://anaconda.org/bioconda/gencore)
+```shell
+conda install -c bioconda gencore
+```
 ## download binary 
 This binary is only for Linux systems: http://opengene.org/gencore/gencore
 ```shell
