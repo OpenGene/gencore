@@ -26,11 +26,32 @@ string BamUtil::getUMI(const bam1_t *b, const string& prefix) {
 
 string BamUtil::getUMI(string qname, const string& prefix) {
     int len = qname.length();
-    int sep = len-1;
     int prefixLen = prefix.length();
+
+    // prefix mode
+    if(prefixLen > 0) {
+        string::size_type pos = qname.find_last_of(prefix);
+        if(pos == string::npos)
+            return "";
+        bool foundSep = false;
+        bool found= false;
+        int umiLen = 0;
+        int sep = 0;
+        int start = pos + 2;
+        for(sep = start; sep<len; sep++) {
+            char c = qname[sep];
+            if(c!='A' && c!='T' && c!='C' && c!='G' && c!='_') {
+                foundSep = true;
+                break;
+            } else 
+                umiLen++;
+        }
+        return qname.substr(start, umiLen);
+    }
 
     bool foundSep = false;
     bool found= false;
+    int sep = len-1;
     for(sep = len-1; sep>=0; sep--) {
         char c = qname[sep];
         if(c == ':') {
@@ -39,8 +60,10 @@ string BamUtil::getUMI(string qname, const string& prefix) {
         }
     }
 
-    if(!foundSep || sep + prefixLen >=len-1)
-        return "";
+    if(!foundSep || sep + prefixLen >=len-1) {
+        if(prefixLen == 0)
+            return "";
+    }
 
 
     // check prefix
@@ -353,12 +376,14 @@ bool BamUtil::test() {
     qnames.push_back("NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGC_ATAC");
     qnames.push_back("NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC");
     qnames.push_back("NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_X");
+    qnames.push_back("@V300034954L1C001R0040000002/1:UMI_ATG_AAT");
 
     vector<string> prefixes;
     prefixes.push_back("");
     prefixes.push_back("UMI");
     prefixes.push_back("UMI");
     prefixes.push_back("");
+    prefixes.push_back("UMI");
     prefixes.push_back("UMI");
 
     vector<string> umis;
@@ -367,6 +392,7 @@ bool BamUtil::test() {
     umis.push_back("GAGC_ATAC");
     umis.push_back("GAGC_ATAC");
     umis.push_back("");
+    umis.push_back("ATG_AAT");
 
     for(int i=0; i<qnames.size(); i++) {
         string umi = getUMI(qnames[i], prefixes[i]);
