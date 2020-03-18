@@ -377,12 +377,14 @@ bool BamUtil::test() {
     qnames.push_back("NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC");
     qnames.push_back("NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_X");
     qnames.push_back("@V300034954L1C001R0040000002/1:UMI_ATG_AAT");
+    qnames.push_back("@V300034954L1C001R0040000002:UMI_ATG_AAT /1");
 
     vector<string> prefixes;
     prefixes.push_back("");
     prefixes.push_back("UMI");
     prefixes.push_back("UMI");
     prefixes.push_back("");
+    prefixes.push_back("UMI");
     prefixes.push_back("UMI");
     prefixes.push_back("UMI");
 
@@ -392,6 +394,7 @@ bool BamUtil::test() {
     umis.push_back("GAGC_ATAC");
     umis.push_back("GAGC_ATAC");
     umis.push_back("");
+    umis.push_back("ATG_AAT");
     umis.push_back("ATG_AAT");
 
     for(int i=0; i<qnames.size(); i++) {
