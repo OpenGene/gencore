@@ -87,6 +87,12 @@ bool Options::validate() {
         error_exit("low_qual cannot be less than 8");
     }
 
+    if(properReadsUmiDiffThreshold > 10) {
+        error_exit("umi_diff_threshold cannot be greater than 10");
+    } else if(properReadsUmiDiffThreshold < 0) {
+        error_exit("umi_diff_threshold cannot be negative");
+    }
+
     if(lowQuality > moderateQuality) {
         error_exit("low_qual cannot be greater than moderate_qual");
     }

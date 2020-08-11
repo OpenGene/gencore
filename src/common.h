@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define VERSION_NUMBER "0.15.0"
+#define VERSION_NUMBER "0.16.0"
 
 #define _DEBUG false
 
