@@ -32,8 +32,8 @@ struct bamComp{
             else if(b2->core.tid == b1->core.tid && b2->core.pos == b1->core.pos && b2->core.mtid == b1->core.mtid && b2->core.mpos == b1->core.mpos) {
                 if(b2->core.isize > b1->core.isize)
                     return true;
-                else
-                    return (long)b2->data > (long)b1->data;
+                else if(b2->core.isize == b1->core.isize && (long)b2->data > (long)b1->data) return true;
+                else return false;
             } else
                 return false;
         } else {         // b1 is unmapped
