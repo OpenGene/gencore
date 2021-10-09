@@ -108,19 +108,16 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
 
 	for(int i=0; i<subClusters.size(); i++) {
 		Pair* p = subClusters[i]->consensusMerge(crossContig);
-        if(p->mMergeReads >= mOptions->clusterSizeReq)
-		  singleConsensusPairs.push_back(p);
-        else
-            delete p;
+		singleConsensusPairs.push_back(p);
 		delete subClusters[i];
 		subClusters[i] = NULL;
 	}
 
+    vector<Pair*> resultConsensusPairs;
+    int singleConsesusCount = 0;
+    int duplexConsensusCount = 0;
     if(hasUMI) {
-        int singleConsesusCount = 0;
-        int duplexConsensusCount = 0;
         // make duplex consensus read pairs
-        vector<Pair*> resultConsensusPairs;
         while(singleConsensusPairs.size() > 1) {
             Pair* p1 = singleConsensusPairs.back();
             singleConsensusPairs.pop_back();
@@ -137,11 +134,15 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
                     int diff =  duplexMerge(p1, p2);
                     //cerr << " diff " << diff << endl;
                     if(diff <= mOptions->duplexMismatchThreshold) {
-                        duplexConsensusCount++;
-                        p1->setDuplex(p2->mMergeReads);
-                        p1->writeSscsDcsTag();
-                        postStats->addDCS();
-                        resultConsensusPairs.push_back(p1);
+                        if(p1->mMergeReads + p2->mMergeReads >= mOptions->clusterSizeReq) {
+                            duplexConsensusCount++;
+                            p1->setDuplex(p2->mMergeReads);
+                            p1->writeSscsDcsTag();
+                            postStats->addDCS();
+                            resultConsensusPairs.push_back(p1);
+                        } else {
+                            delete p1;
+                        }
                     } else {
                         // too much diff, drop this duplex
                         delete p1;
@@ -151,28 +152,36 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
                     break;
                 }
             }
+            // no duplex found, treat it as sscs
             if(!foundDuplex) {
-                singleConsesusCount++;
-                p1->writeSscsDcsTag();
-                postStats->addSSCS();
-                resultConsensusPairs.push_back(p1);
+                if(p1->mMergeReads >= mOptions->clusterSizeReq) {
+                    singleConsesusCount++;
+                    p1->writeSscsDcsTag();
+                    postStats->addSSCS();
+                    resultConsensusPairs.push_back(p1);
+                } else {
+                    delete p1;
+                }
             }
         }
-        if(resultConsensusPairs.size()>0) {
-            postStats->addCluster(resultConsensusPairs.size()>1);
-        }
-        return resultConsensusPairs;
     } else {
         // no umi, no duplex
-        if(singleConsensusPairs.size()>0) {
-            postStats->addCluster(singleConsensusPairs.size()>1);
-        }
         for(int i=0;i<singleConsensusPairs.size(); i++) {
-            singleConsensusPairs[i]->writeSscsDcsTag();
-            postStats->addSSCS();
+            Pair* p = singleConsensusPairs[i];
+            if(p->mMergeReads >= mOptions->clusterSizeReq) {
+                singleConsesusCount++;
+                p->writeSscsDcsTag();
+                postStats->addSSCS();
+                resultConsensusPairs.push_back(p);
+            } else {
+                delete p;
+            }
         }
-    	return singleConsensusPairs;
     }
+    if(resultConsensusPairs.size()>0) {
+        postStats->addCluster(resultConsensusPairs.size()>1);
+    }
+    return resultConsensusPairs;
 }
 
 bool Cluster::isDuplex(const string& umi1, const string& umi2) {
@@ -250,7 +259,7 @@ Pair* Cluster::consensusMerge(bool crossContig) {
     int rightDiff = 0;
 
     // in this case, no need to make consensus
-    if(mPairs.size()>=mOptions->clusterSizeReq && mPairs.size()==1 && mPairs.begin()->second->mRight == NULL) {
+    if(mPairs.size()==1 && mPairs.begin()->second->mRight == NULL) {
         Pair* p = mPairs.begin()->second;
         mPairs.clear();
         return p;
@@ -314,9 +323,6 @@ Pair* Cluster::consensusMerge(bool crossContig) {
 }
 
 bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
-    if(mPairs.size() < mOptions->clusterSizeReq) {
-        return NULL;
-    }
     vector<Pair*> allPairs;
     map<string, Pair*>::iterator iterOfPairs;
     for(iterOfPairs = mPairs.begin(); iterOfPairs!=mPairs.end(); iterOfPairs++) {
@@ -493,12 +499,6 @@ bam1_t* Cluster::consensusMergeBam(bool isLeft, int& diff) {
             reads.push_back(read);
             scores.push_back(score);
         }
-    }
-
-    if(reads.size() < mOptions->clusterSizeReq) {
-        bam_destroy1(out);
-        out = NULL;
-        return NULL;
     }
 
     diff = makeConsensus(reads, out, scores, leftReadMode);
