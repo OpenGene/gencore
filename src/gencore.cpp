@@ -8,7 +8,9 @@ Gencore::Gencore(Options *opt){
     mBamHeader = NULL;
     mOutSam = NULL;
     mPreStats = new Stats(opt);
+    mPreStats->setPostStats(false);
     mPostStats = new Stats(opt);
+    mPostStats->setPostStats(true);
     mOutSetCleared = false;
     mProcessedTid = -1;
     mProcessedPos = -1;

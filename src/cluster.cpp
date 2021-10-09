@@ -54,9 +54,12 @@ int Cluster::umiDiff(const string& umi1, const string& umi2) {
 vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats* postStats, bool crossContig) {
 	vector<Cluster*> subClusters;
     map<string, int> umiCount;
+    bool hasUMI = false;
     map<string, Pair*>::iterator iterOfPairs;
     for(iterOfPairs = mPairs.begin(); iterOfPairs!=mPairs.end(); iterOfPairs++) {
         string umi = iterOfPairs->second->getUMI();
+        if(!umi.empty())
+            hasUMI = true;
         umiCount[umi]++;
     }
 	while(mPairs.size()>0) {
@@ -101,23 +104,145 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
     //if(subClusters.size()>1)
     //    cerr << subClusters.size() << " clusters" << endl;
 
-	vector<Pair*> consensusPairs;
+	vector<Pair*> singleConsensusPairs;
 
 	for(int i=0; i<subClusters.size(); i++) {
 		Pair* p = subClusters[i]->consensusMerge(crossContig);
         if(p->mMergeReads >= mOptions->clusterSizeReq)
-		  consensusPairs.push_back(p);
+		  singleConsensusPairs.push_back(p);
         else
             delete p;
 		delete subClusters[i];
 		subClusters[i] = NULL;
 	}
 
-    if(consensusPairs.size()>0) {
-        postStats->addCluster(consensusPairs.size()>1);
+    if(hasUMI) {
+        int singleConsesusCount = 0;
+        int duplexConsensusCount = 0;
+        // make duplex consensus read pairs
+        vector<Pair*> resultConsensusPairs;
+        while(singleConsensusPairs.size() > 1) {
+            Pair* p1 = singleConsensusPairs.back();
+            singleConsensusPairs.pop_back();
+            string umi1  = p1->getUMI();
+            bool foundDuplex = false;
+            for(int i=0;i<singleConsensusPairs.size(); i++) {
+                string umi2 = singleConsensusPairs[i]->getUMI();
+                // a duplex
+                if( isDuplex(umi1, umi2)) {
+                    //cerr << "duplex:" << umi1 << ", " << umi2;
+                    foundDuplex = true;
+                    Pair* p2 = singleConsensusPairs[i];
+                    // merge p2 to p1
+                    int diff =  duplexMerge(p1, p2);
+                    //cerr << " diff " << diff << endl;
+                    if(diff <= mOptions->duplexMismatchThreshold) {
+                        duplexConsensusCount++;
+                        p1->setDuplex(p2->mMergeReads);
+                        p1->writeSscsDcsTag();
+                        postStats->addDCS();
+                        resultConsensusPairs.push_back(p1);
+                    } else {
+                        // too much diff, drop this duplex
+                        delete p1;
+                    }
+                    singleConsensusPairs.erase(singleConsensusPairs.begin()+i);
+                    delete p2;
+                    break;
+                }
+            }
+            if(!foundDuplex) {
+                singleConsesusCount++;
+                p1->writeSscsDcsTag();
+                postStats->addSSCS();
+                resultConsensusPairs.push_back(p1);
+            }
+        }
+        if(resultConsensusPairs.size()>0) {
+            postStats->addCluster(resultConsensusPairs.size()>1);
+        }
+        return resultConsensusPairs;
+    } else {
+        // no umi, no duplex
+        if(singleConsensusPairs.size()>0) {
+            postStats->addCluster(singleConsensusPairs.size()>1);
+        }
+        for(int i=0;i<singleConsensusPairs.size(); i++) {
+            singleConsensusPairs[i]->writeSscsDcsTag();
+            postStats->addSSCS();
+        }
+    	return singleConsensusPairs;
     }
+}
 
-	return consensusPairs;
+bool Cluster::isDuplex(const string& umi1, const string& umi2) {
+    vector<string> umiPairs1;
+    vector<string> umiPairs2;
+    split(umi1, umiPairs1, "_");
+    split(umi2, umiPairs2, "_");
+    if(umiPairs1.size()!= 2 || umiPairs2.size() != 2)
+        return false;
+
+    if(umiPairs1[0] == umiPairs2[1] && umiPairs1[1] == umiPairs2[0])
+        return true;
+    else
+        return false;
+}
+
+int Cluster::duplexMerge(Pair* p1, Pair* p2) {
+    int diff = 0;
+    if(p1->mLeft && p2->mLeft)
+        diff += duplexMergeBam(p1->mLeft, p2->mLeft);
+    if(p1->mRight && p2->mRight)
+        diff += duplexMergeBam(p1->mRight, p2->mRight);
+    return diff;
+}
+
+int Cluster::duplexMergeBam(bam1_t* b1, bam1_t* b2) {
+    int len1 = b1->core.l_qseq;
+    int len2 = b2->core.l_qseq;
+    int diff = abs(len1 - len2);
+    int len = min(len1, len2);
+    uint8_t * seq1 = bam_get_seq(b1);
+    uint8_t * seq2 = bam_get_seq(b2);
+    uint8_t * qual1 = bam_get_qual(b1);
+    uint8_t * qual2 = bam_get_qual(b2);
+
+    uint8_t N4bits = BamUtil::base2fourbits('N');
+    for(int i=0; i<len; i++) {
+        // two bases encoded in one byte: identical
+        if(seq1[i/2] == seq2[i/2]) {
+            i++;
+            continue;
+        }
+        char base1, base2;
+        if(i%2 == 1) {
+            base1 = BamUtil::fourbits2base(seq1[i/2] & 0xF);
+            base2 = BamUtil::fourbits2base(seq2[i/2] & 0xF);
+        } else {
+            base1 = BamUtil::fourbits2base((seq1[i/2]>>4) & 0xF);
+            base2 = BamUtil::fourbits2base((seq1[i/2]>>4) & 0xF);
+        }
+        if(base1 != base2) {
+            diff++;
+            //set qual of the two bases to 0
+            qual1[i]=0;
+            qual2[i]=0;
+            // set bases to N
+            if(i%2 == 1) {
+                seq1[i/2] &= 0xF0;
+                seq1[i/2] |= N4bits;
+                seq2[i/2] &= 0xF0;
+                seq2[i/2] |= N4bits;
+            } else {
+                seq1[i/2] &= 0x0F;
+                seq1[i/2] |= (N4bits << 4);
+                seq2[i/2] &= 0x0F;
+                seq2[i/2] |= (N4bits << 4);
+            }
+        }
+    }
+    return diff;
 }
 
 Pair* Cluster::consensusMerge(bool crossContig) {
@@ -660,8 +785,11 @@ bool Cluster::test(){
     passed &= umiDiff("ATCGATCG", "ATCGTTC") == 2;
     passed &= umiDiff("ATCGATCG", "ATCGTTCG") == 1;
     passed &= umiDiff("AAAA_ATCG", "AAAA_ATCG") == 0;
-    passed &= umiDiff("AAAA_ATCG", "ATCG_AAAA") == 0;
-    passed &= umiDiff("AAAA_ATCG", "ATCG_AAA") == 1;
-    passed &= umiDiff("AAAA_ATCG", "ATCG_AACA") == 1;
+    passed &= isDuplex("ATCG_CTAG", "CTAG_ATCG") == true;
+    passed &= isDuplex("AGC_TGA", "TGA_AGC") == true;
+    passed &= isDuplex("AAAA_AAAA", "AAAA_AAAA") == true;
+    passed &= isDuplex("CTAG", "CTAG_ATCG") == false;
+    passed &= isDuplex("CTAG", "CCCAGG") == false;
+    passed &= isDuplex("", "") == false;
     return passed;
 }

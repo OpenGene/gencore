@@ -67,7 +67,8 @@ void HtmlReporter::printSummary(ofstream& ofs,  Stats* preStats, Stats* postStat
     outputRow(ofs, "gencore version:", string(VERSION_NUMBER)+ " (<a href='https://github.com/OpenGene/gencore'>https://github.com/OpenGene/gencore</a>)");
     outputRow(ofs, "mapping rate:", to_string(preStats->getMappingRate()));
     outputRow(ofs, "duplication rate:", to_string(preStats->getDupRate()));
-    outputRow(ofs, "fragment passing rate:", to_string((double) postStats->getMolecules() / preStats->getMolecules()));
+    outputRow(ofs, "Single Stranded Consensus Sequence:", to_string(postStats->mSSCSNum));
+    outputRow(ofs, "Duplex Consensus Sequence:", to_string(postStats->mDCSNum));
     ofs << "</table>\n";
     ofs << "</div>\n";
 
@@ -426,7 +427,7 @@ void HtmlReporter::printCSS(ofstream& ofs){
     ofs << "<style type=\"text/css\">" << endl;
     ofs << "td {border:1px solid #dddddd;padding:5px;font-size:12px;}" << endl;
     ofs << "table {border:1px solid #999999;padding:2x;border-collapse:collapse; width:800px}" << endl;
-    ofs << ".col1 {width:240px; font-weight:bold;}" << endl;
+    ofs << ".col1 {width:280px; font-weight:bold;}" << endl;
     ofs << ".adapter_col {width:500px; font-size:10px;}" << endl;
     ofs << "img {padding:30px;}" << endl;
     ofs << "#menu {font-family:Consolas, 'Liberation Mono', Menlo, Courier, monospace;}" << endl;

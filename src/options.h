@@ -36,6 +36,7 @@ public:
     // thresholds
     int properReadsUmiDiffThreshold;
     int unproperReadsUmiDiffThreshold;
+    int duplexMismatchThreshold;
     int clusterSizeReq;
     int baseScoreReq;
     double scorePercentReq;

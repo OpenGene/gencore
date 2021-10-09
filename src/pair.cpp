@@ -8,9 +8,12 @@ Pair::Pair(Options* opt){
     mLeftScore = NULL;
     mRightScore = NULL;
     mMergeReads = 1;
+    mReverseMergeReads = 0;
     mMergeLeftDiff = 0;
     mMergeRightDiff = 0;
     mOptions = opt;
+    mIsDuplex = false;
+    mCssDcsTagWritten = false;
 }
 
 Pair::~Pair(){
@@ -29,6 +32,38 @@ Pair::~Pair(){
     if(mRightScore) {
         delete[] mRightScore;
         mRightScore = NULL;
+    }
+}
+
+void Pair::setDuplex(int mergeReadsOfReverseStrand) {
+    mIsDuplex = true;
+    mReverseMergeReads = mergeReadsOfReverseStrand;
+}
+
+void Pair::writeSscsDcsTag() {
+    if(mCssDcsTagWritten) {
+        error_exit("The SSCS/DCS tag has already been written!");
+    }
+    if(mLeft)
+        writeSscsDcsTagBam(mLeft);
+    if(mRight)
+        writeSscsDcsTagBam(mRight);
+    mCssDcsTagWritten = true;
+}
+
+void Pair::writeSscsDcsTagBam(bam1_t* b) {
+    const char cssTag[2] = {'F','R'}; // forward strand read count
+    const char dcsTag[2] = {'R','R'}; // reverse strand read number
+    char type = 'C';
+    unsigned short val = min(mMergeReads, 65535);
+    int ret = bam_aux_append(b, cssTag, type, 1, (uint8_t*)&val);
+    if(ret != 0)
+        error_exit("Failed to write the consensus reads tag (CR) to BAM");
+    if(mIsDuplex) {
+        unsigned short valReverse = min(mReverseMergeReads, 65535);
+        ret = bam_aux_append(b, dcsTag, type, 1, (uint8_t*)&valReverse);
+        if(ret != 0)
+            error_exit("Failed to write the duplex consensus reads tag (DR) to BAM");
     }
 }
 
@@ -284,7 +319,7 @@ bool Pair::isDupWith(Pair* other) {
 }
 
 void Pair::dump() {
-    cerr << "merged by " << mMergeReads << " reads, diff (" << mMergeLeftDiff << ", " << mMergeRightDiff << ")" << endl;
+    cerr << "merged by " << mMergeReads << " forward reads, diff (" << mMergeLeftDiff << ", " << mMergeRightDiff << ")" << endl;
     if(mLeft){
         cerr << "left:" << endl;
         BamUtil::dump(mLeft);

@@ -41,6 +41,9 @@ public:
 
 private:
     static int umiDiff(const string& umi1, const string& umi2);
+    static bool isDuplex(const string& umi1, const string& umi2);
+    int duplexMerge(Pair* p1, Pair* p2);
+    int duplexMergeBam(bam1_t* b1, bam1_t* b2);
     
 public:
     map<string, Pair*> mPairs;

@@ -13,12 +13,27 @@ Stats::Stats(Options* opt) {
 	memset(mSupportingHistgram, 0, sizeof(long)*MAX_SUPPORTING_READS);
 	uncountedSupportingReads = 0;
 	mBedStats = NULL;
+	mIsPostStats = false;
+	mSSCSNum = 0;
+	mDCSNum = 0;
 }
 
 Stats::~Stats() {
 	delete[] mSupportingHistgram;
 	if(mBedStats)
 		delete mBedStats;
+}
+
+void Stats::setPostStats(bool flag) {
+	mIsPostStats = flag;
+}
+
+void Stats::addSSCS() {
+	mSSCSNum++;
+}
+
+void Stats::addDCS() {
+	mDCSNum++;
 }
 
 void Stats::makeGenomeDepthBuf() {
@@ -189,11 +204,19 @@ void Stats::print() {
 	cerr << "Total fragments: " << mMolecule << endl;
 	cerr << "Fragments with single-end reads: " << mMoleculeSE << endl;
 	cerr << "Fragments with paired-end reads: " << mMoleculePE << endl;
-	cerr << "Duplication level histogram: " << endl;
-	for(int i=1; i<MAX_SUPPORTING_READS && i<=10; i++) {
-		if(mSupportingHistgram[i] == 0)
-			break;
-		cerr << "    Fragments with " << i << " duplicates: " << mSupportingHistgram[i] << endl;
+	if(!mIsPostStats) {
+		cerr << "Duplication level histogram: " << endl;
+		for(int i=1; i<MAX_SUPPORTING_READS && i<=10; i++) {
+			if(mSupportingHistgram[i] == 0)
+				break;
+			cerr << "    Fragments with " << i << " duplicates: " << mSupportingHistgram[i] << endl;
+		}
+	}
+
+	if(mIsPostStats) {
+		cerr << endl;
+		cerr << "Single Stranded Consensus Sequence (has 'FR' tag): " << mSSCSNum << endl;
+		cerr << "Duplex Consensus Sequence (has both 'FS' and 'RR' tags): " << mDCSNum << endl;
 	}
 }
 

@@ -17,7 +17,8 @@ void JsonReporter::report(Stats* preStats, Stats* postStats) {
     ofs << "\t" << "\"summary\": {" << endl;
     ofs << "\t\t\"mapping_rate\":" << preStats->getMappingRate() << "," << endl;
     ofs << "\t\t\"duplication_rate\":" << preStats->getDupRate() << "," << endl;
-    ofs << "\t\t\"fragment_passing_rate\":" << (double) postStats->getMolecules() / preStats->getMolecules() << "";
+    ofs << "\t\t\"single_stranded_consensus_sequence\":" << postStats->mSSCSNum << "," << endl;
+    ofs << "\t\t\"duplex_consensus_sequence\":" << postStats->mDCSNum  << "";
     ofs << endl;
     ofs << "\t" << "}," << endl;
 

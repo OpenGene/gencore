@@ -34,6 +34,9 @@ public:
     void makeGenomeDepthBuf();
     void makeBedStats(Bed* other = NULL);
     void statDepth(int tid, int start, int len);
+    void setPostStats(bool flag);
+    void addSSCS();
+    void addDCS();
 
 public:    
 	static string list2string(double* list, int size);
@@ -57,6 +60,9 @@ public:
     long uncountedSupportingReads;
     vector<vector<long>> mGenomeDepth;
     Bed* mBedStats;
+    bool mIsPostStats;
+    long mSSCSNum;
+    long mDCSNum;
 };
 
 #endif

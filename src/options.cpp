@@ -11,6 +11,7 @@ Options::Options(){
     bamHeader = NULL;
     properReadsUmiDiffThreshold = 2;
     unproperReadsUmiDiffThreshold = 0;
+    duplexMismatchThreshold = 1;
     debug = false;
     hasBedFile = false;
 

@@ -33,6 +33,8 @@ public:
     string getQName();
     string getLeftCigar();
     string getRightCigar();
+    void setDuplex(int mergeReadsOfReverseStrand);
+    void writeSscsDcsTag();
 
     bool isDupWith(Pair* other);
     
@@ -40,13 +42,16 @@ public:
 
 private:
     void computeScore();
+    void writeSscsDcsTagBam(bam1_t* b);
 
 public:
     bam1_t *mLeft;
     bam1_t *mRight;
     int mMergeReads;
+    int mReverseMergeReads;
     int mMergeLeftDiff;
     int mMergeRightDiff;
+    bool mIsDuplex;
 
 private:
     int mTLEN;
@@ -57,6 +62,7 @@ private:
     Options* mOptions;
     char* mLeftScore;
     char* mRightScore;
+    bool mCssDcsTagWritten;
 };
 
 #endif
