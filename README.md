@@ -104,6 +104,12 @@ gencore reports the results both in HTML format and JSON format for manually che
 ## coverate statistics in capturing regions
 ![image](http://www.opengene.org/gencore/coverage-bed.jpeg) 
 
+# understand the output
+gencore outputs following files:
+1. the processed BAM. In this BAM, each consensus read will have a tag `FR`, which means `forward read number of this consensus read`. If the read is a duplex consensus read, it will also has a tag `RR`, which means `reverse read number of this consensus read`. Downstream tools can read the `FR` and `RR` tags for further processing or variant calling.
+2. the JSON report. A json file contains lots of statistical informations.
+3. the HTML report. A html file visualizes the information of the JSON.
+4. the plain text output.
 
 # how it works
 important steps:
@@ -165,35 +171,36 @@ gencore -i in.bam -o out.bam -r hg19.fa -s 3 --ratio_threshold=0.9
 # UMI format
 `gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
 
-The UMI should in the tail of query names. It can have a prefix like `UMI`, followed by an underscore. If the UMI has a prefix, it should be specified by `--umi_prefix` or `-u`. It can also have two parts, which are connected by an underscore.   
+The UMI should in the tail of query names. It can have a prefix like `UMI`, followed by an underscore. If the UMI has a prefix, it should be specified by `--umi_prefix` or `-u`. If the UMI prefix is `umi` or `UMI`, it can be automatically detected. The UMI can also have two parts, which are connected by an underscore.   
 
 ## UMI examples
 * Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGCATAC"`, prefix = `"UMI"`, umi = `"GAGCATAC"`
-* Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:UMI_GAGC_ATAC"`, prefix = `"UMI"`, umi = `"GAGC_ATAC"`
+* Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:umi_GAGC_ATAC"`, prefix = `"umi"`, umi = `"GAGC_ATAC"`
 * Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGCATAC"`, prefix = `""`, umi = `"GAGCATAC"`
 * Read query name = `"NB551106:8:H5Y57BGX2:1:13304:3538:1404:GAGC_ATAC"`, prefix = `""`, umi = `"GAGC_ATAC"`
 
 # all options
 ```
 options:
-  -i, --in                   input sorted bam/sam file. STDIN will be read from if it's not specified (string [=-])
-  -o, --out                  output bam/sam file. STDOUT will be written to if it's not specified (string [=-])
-  -r, --ref                  reference fasta file name (should be an uncompressed .fa/.fasta file) (string)
-  -b, --bed                  bed file to specify the capturing region, none by default (string [=])
-  -u, --umi_prefix           the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats. (string [=])
-  -s, --supporting_reads     only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 1. (int [=1])
-  -a, --ratio_threshold      if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8 (double [=0.8])
-  -c, --score_threshold      if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6 (int [=6])
-  -d, --umi_diff_threshold   if two reads with identical mapping position have UMI difference <= <umi_diff_threshold>, then they will be merged to generate a consensus read. Default value is 2. (int [=2])
-      --high_qual            the threshold for a quality score to be considered as high quality. Default 30 means Q30. (int [=30])
-      --moderate_qual        the threshold for a quality score to be considered as moderate quality. Default 20 means Q20. (int [=20])
-      --low_qual             the threshold for a quality score to be considered as low quality. Default 15 means Q15. (int [=15])
-      --coverage_sampling    the sampling rate for genome scale coverage statistics. Default 10000 means 1/10000. (int [=10000])
-  -j, --json                 the json format report file name (string [=gencore.json])
-  -h, --html                 the html format report file name (string [=gencore.html])
-      --debug                output some debug information to STDERR.
-      --quit_after_contig    stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation. (int [=0])
-  -?, --help                 print this message
+  -i, --in                       input sorted bam/sam file. STDIN will be read from if it's not specified (string [=-])
+  -o, --out                      output bam/sam file. STDOUT will be written to if it's not specified (string [=-])
+  -r, --ref                      reference fasta file name (should be an uncompressed .fa/.fasta file) (string)
+  -b, --bed                      bed file to specify the capturing region, none by default (string [=])
+  -u, --umi_prefix               the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats. (string [=auto])
+  -s, --supporting_reads         only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 1. (int [=1])
+  -a, --ratio_threshold          if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8 (double [=0.8])
+  -c, --score_threshold          if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6 (int [=6])
+  -d, --umi_diff_threshold       if two reads with identical mapping position have UMI difference <= <umi_diff_threshold>, then they will be merged to generate a consensus read. Default value is 2. (int [=2])
+  -D, --duplex_diff_threshold    if the forward consensus and reverse consensus sequences have <= <duplex_diff_threshold> mismatches, then they will be merged to generate a duplex consensus sequence, otherwise will be discarded. Default value is 2. (int [=2])
+      --high_qual                the threshold for a quality score to be considered as high quality. Default 30 means Q30. (int [=30])
+      --moderate_qual            the threshold for a quality score to be considered as moderate quality. Default 20 means Q20. (int [=20])
+      --low_qual                 the threshold for a quality score to be considered as low quality. Default 15 means Q15. (int [=15])
+      --coverage_sampling        the sampling rate for genome scale coverage statistics. Default 10000 means 1/10000. (int [=10000])
+  -j, --json                     the json format report file name (string [=gencore.json])
+  -h, --html                     the html format report file name (string [=gencore.html])
+      --debug                    output some debug information to STDERR.
+      --quit_after_contig        stop when <quit_after_contig> contigs are processed. Only used for fast debugging. Default 0 means no limitation. (int [=0])
+  -?, --help                     print this message
 ```
 # citation
 The gencore paper has been published in  BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-3280-9. If you used gencore in your research work, please cite it as:
