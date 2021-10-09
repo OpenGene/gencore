@@ -199,7 +199,24 @@ void Gencore::consensus(){
     int lastTid = -1;
     int lastPos = -1;
     bool hasPE = false;
+    bool isFirst = true;
     while ((r = sam_read1(in, mBamHeader, b)) >= 0) {
+        // for the first read, check UMI prefix automatically
+        if(isFirst) {
+            if(mOptions->umiPrefix == "auto") {
+                string umi = BamUtil::getQName(b);
+                if(umi.find("umi_") != string::npos) 
+                    mOptions->umiPrefix = "umi";
+                else if(umi.find("UMI_") != string::npos)
+                    mOptions->umiPrefix = "UMI";
+                else
+                    mOptions->umiPrefix = "";
+
+                if(!mOptions->umiPrefix.empty())
+                    cerr << endl << "Detected UMI prefix: " << mOptions->umiPrefix << endl << endl;
+            }
+            isFirst = false;
+        }
         mPreStats->addRead(b);
         count++;
         if(count < 1000) {

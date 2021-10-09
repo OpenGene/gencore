@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     cmd.add<string>("bed", 'b', "bed file to specify the capturing region, none by default", false, "");
     
     // UMI
-    cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "");
+    cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "auto");
     
     // thresholds
     cmd.add<int>("supporting_reads", 's', "only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 1.", false, 1);
