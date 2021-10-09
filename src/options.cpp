@@ -9,7 +9,7 @@ Options::Options(){
     umiPrefix = "";
     maxContig = 0;
     bamHeader = NULL;
-    properReadsUmiDiffThreshold = 2;
+    properReadsUmiDiffThreshold = 1;
     unproperReadsUmiDiffThreshold = 0;
     duplexMismatchThreshold = 2;
     debug = false;
