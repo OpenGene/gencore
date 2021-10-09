@@ -41,6 +41,7 @@ int main(int argc, char* argv[]){
     cmd.add<double>("ratio_threshold", 'a', "if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8", false, 0.8);
     cmd.add<int>("score_threshold", 'c', "if the score of the major base in a cluster is less than <score_threshold>, it will be further compared to the reference. The valud should be 1~20, and the default value is 6", false, 6);
     cmd.add<int>("umi_diff_threshold", 'd', "if two reads with identical mapping position have UMI difference <= <umi_diff_threshold>, then they will be merged to generate a consensus read. Default value is 2.", false, 2);
+    cmd.add<int>("duplex_diff_threshold", 'D', "if the forward consensus and reverse consensus sequences have <= <duplex_diff_threshold> mismatches, then they will be merged to generate a duplex consensus sequence, otherwise will be discarded. Default value is 2.", false, 2);
     cmd.add<int>("high_qual", 0, "the threshold for a quality score to be considered as high quality. Default 30 means Q30.", false, 30);
     cmd.add<int>("moderate_qual", 0, "the threshold for a quality score to be considered as moderate quality. Default 20 means Q20.", false, 20);
     cmd.add<int>("low_qual", 0, "the threshold for a quality score to be considered as low quality. Default 15 means Q15.", false, 15);
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]){
     opt.lowQuality = cmd.get<int>("low_qual");
     opt.coverageStep = cmd.get<int>("coverage_sampling");
     opt.properReadsUmiDiffThreshold = cmd.get<int>("umi_diff_threshold");
+    opt.duplexMismatchThreshold = cmd.get<int>("duplex_diff_threshold");
     opt.debug = cmd.exist("debug");
 
     // reporting

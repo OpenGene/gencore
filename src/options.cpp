@@ -11,7 +11,7 @@ Options::Options(){
     bamHeader = NULL;
     properReadsUmiDiffThreshold = 2;
     unproperReadsUmiDiffThreshold = 0;
-    duplexMismatchThreshold = 1;
+    duplexMismatchThreshold = 2;
     debug = false;
     hasBedFile = false;
 
@@ -100,6 +100,12 @@ bool Options::validate() {
 
     if(moderateQuality > highQuality) {
         error_exit("moderate_qual cannot be greater than high_qual");
+    }
+
+    if(duplexMismatchThreshold > 10) {
+        error_exit("duplex_diff_threshold cannot be greater than 10, suggest 2.");
+    } else if(duplexMismatchThreshold < 0) {
+        error_exit("duplex_diff_threshold cannot be less than 0, suggest 2.");
     }
 
     return true;
