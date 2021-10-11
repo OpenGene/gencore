@@ -32,6 +32,7 @@ int main(int argc, char* argv[]){
     cmd.add<string>("out", 'o', "output bam/sam file. STDOUT will be written to if it's not specified", false, "-");
     cmd.add<string>("ref", 'r', "reference fasta file name (should be an uncompressed .fa/.fasta file)", true, "");
     cmd.add<string>("bed", 'b', "bed file to specify the capturing region, none by default", false, "");
+    cmd.add("duplex_only", 'x', "only output duplex consensus sequences, which means single stranded consensus sequences will be discarded.");
     
     // UMI
     cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "auto");
@@ -74,6 +75,7 @@ int main(int argc, char* argv[]){
     opt.properReadsUmiDiffThreshold = cmd.get<int>("umi_diff_threshold");
     opt.duplexMismatchThreshold = cmd.get<int>("duplex_diff_threshold");
     opt.debug = cmd.exist("debug");
+    opt.duplexOnly = cmd.exist("duplex_only");
 
     // reporting
     opt.jsonFile = cmd.get<string>("json");

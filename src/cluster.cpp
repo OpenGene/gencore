@@ -154,7 +154,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
             }
             // no duplex found, treat it as sscs
             if(!foundDuplex) {
-                if(p1->mMergeReads >= mOptions->clusterSizeReq) {
+                if(!mOptions->duplexOnly && p1->mMergeReads >= mOptions->clusterSizeReq) {
                     singleConsesusCount++;
                     p1->writeSscsDcsTag();
                     postStats->addSSCS();
@@ -168,7 +168,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
         // no umi, no duplex
         for(int i=0;i<singleConsensusPairs.size(); i++) {
             Pair* p = singleConsensusPairs[i];
-            if(p->mMergeReads >= mOptions->clusterSizeReq) {
+            if(!mOptions->duplexOnly && p->mMergeReads >= mOptions->clusterSizeReq) {
                 singleConsesusCount++;
                 p->writeSscsDcsTag();
                 postStats->addSSCS();

@@ -38,6 +38,8 @@ Options::Options(){
 
     bedCoverageStep = 10;
     coverageStep = 10000;
+
+    duplexOnly = false;
 }
 
 bool Options::validate() {
