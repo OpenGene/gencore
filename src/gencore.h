@@ -83,6 +83,7 @@ private:
     bool mOutSetCleared;
     int mProcessedTid;
     int mProcessedPos;
+    bool mProperClustersFinished;
 };
 
 #endif

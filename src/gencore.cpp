@@ -14,6 +14,7 @@ Gencore::Gencore(Options *opt){
     mOutSetCleared = false;
     mProcessedTid = -1;
     mProcessedPos = -1;
+    mProperClustersFinished = false;
 }
 
 Gencore::~Gencore(){
@@ -253,7 +254,10 @@ void Gencore::consensus(){
         if(b->core.tid < 0 || b->core.pos < 0 ) {
             // we arrived the end of bam file with unmapped reads, go clear the output set first
             if(!mOutSetCleared) {
-                finishConsensus(mProperClusters);
+                if(!mProperClustersFinished) {
+                    mProperClustersFinished = true;
+                    finishConsensus(mProperClusters);
+                }
                 outputOutSet();
             }
             //writeBam(b);
@@ -268,6 +272,10 @@ void Gencore::consensus(){
         b = bam_init1();
     }
 
+    if(!mProperClustersFinished) {
+        mProperClustersFinished = true;
+        finishConsensus(mProperClusters);
+    }
     
     //finishConsensus(mUnProperClusters);
 
