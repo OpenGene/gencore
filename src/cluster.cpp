@@ -95,7 +95,6 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
         //if(mPairs.size()>0 || subClusters.size()>0)
         //    cerr << "UMI " << topUMI<< " " << topCount << "/" << c->mPairs.size() << endl;
         subClusters.push_back(c);
-        preStats->addMolecule(c->mPairs.size(), isPE);
         umiCount[topUMI] = 0;
 	}
 
@@ -133,6 +132,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
                     // merge p2 to p1
                     int diff =  duplexMerge(p1, p2);
                     //cerr << " diff " << diff << endl;
+                    preStats->addMolecule(p1->mMergeReads + p2->mMergeReads, p1->mLeft && p1->mRight);
                     if(diff <= mOptions->duplexMismatchThreshold) {
                         if(p1->mMergeReads + p2->mMergeReads >= mOptions->clusterSizeReq) {
                             duplexConsensusCount++;
@@ -154,6 +154,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
             }
             // no duplex found, treat it as sscs
             if(!foundDuplex) {
+                preStats->addMolecule(p1->mMergeReads, p1->mLeft && p1->mRight);
                 if(!mOptions->duplexOnly && p1->mMergeReads >= mOptions->clusterSizeReq) {
                     singleConsesusCount++;
                     p1->writeSscsDcsTag();
@@ -168,6 +169,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
         // no umi, no duplex
         for(int i=0;i<singleConsensusPairs.size(); i++) {
             Pair* p = singleConsensusPairs[i];
+            preStats->addMolecule(p->mMergeReads, p->mLeft && p->mRight);
             if(!mOptions->duplexOnly && p->mMergeReads >= mOptions->clusterSizeReq) {
                 singleConsesusCount++;
                 p->writeSscsDcsTag();
