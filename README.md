@@ -6,6 +6,7 @@ An efficient tool to remove sequencing duplications and eliminate sequencing err
 * [A quick example](#a-quick-example)
 * [Download, compile and install](#get-gencore)
 * [Why to use gencore](#why-to-use-gencore)
+* [Understand the output](#understand-the-output)
 * [How it works](#how-it-works)
 * [Command examples](#command-examples)
 * [UMI format](#umi-format)
