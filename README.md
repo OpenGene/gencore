@@ -107,7 +107,7 @@ gencore reports the results both in HTML format and JSON format for manually che
 
 # understand the output
 gencore outputs following files:
-1. the processed BAM. In this BAM, each consensus read will have a tag `FR`, which means `forward read number of this consensus read`. If the read is a duplex consensus read, it will also has a tag `RR`, which means `reverse read number of this consensus read`. Downstream tools can read the `FR` and `RR` tags for further processing or variant calling. See following two read examples:
+1. the processed BAM. In this BAM, each consensus read will have a tag `FR`, which means `forward read number of this consensus read`. If the read is a duplex consensus read, it will also has a tag `RR`, which means `reverse read number of this consensus read`. Downstream tools can read the `FR` and `RR` tags for further processing or variant calling. In following example, the first read is a single-stranded consensus sequence (only has a FR tag), and the second read is a duplex consensus sequence (has both FR and RR tags):
 ```
 A00250:28:H2HC3DSX2:1:1117:3242:5321:UMI_GCT_CTA        161     chr12   25377992        60      143M    =       25378431        582
      GCAATAATTTTTGTCAGAAAAATGCATTAAATGAATAACAGAATTTCTGTTGGCTTTCTGGGTATTGTCTTTCTTTAATGAGACCTTTCTCCAGAAATAAACACATCCTCAAAAAAATTCTGCCAAAGTAAAATTCTTCAAAT FFFFFFFFFFFFFFFFFFF,FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF NM:i:1  MD:Z:34G108     AS:i:138        XS:i:21 RG:Z:cfdna      FR:i:2
