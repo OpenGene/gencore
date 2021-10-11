@@ -107,7 +107,13 @@ gencore reports the results both in HTML format and JSON format for manually che
 
 # understand the output
 gencore outputs following files:
-1. the processed BAM. In this BAM, each consensus read will have a tag `FR`, which means `forward read number of this consensus read`. If the read is a duplex consensus read, it will also has a tag `RR`, which means `reverse read number of this consensus read`. Downstream tools can read the `FR` and `RR` tags for further processing or variant calling.
+1. the processed BAM. In this BAM, each consensus read will have a tag `FR`, which means `forward read number of this consensus read`. If the read is a duplex consensus read, it will also has a tag `RR`, which means `reverse read number of this consensus read`. Downstream tools can read the `FR` and `RR` tags for further processing or variant calling. See following two read examples:
+```
+A00250:28:H2HC3DSX2:1:1117:3242:5321:UMI_GCT_CTA        161     chr12   25377992        60      143M    =       25378431        582
+     GCAATAATTTTTGTCAGAAAAATGCATTAAATGAATAACAGAATTTCTGTTGGCTTTCTGGGTATTGTCTTTCTTTAATGAGACCTTTCTCCAGAAATAAACACATCCTCAAAAAAATTCTGCCAAAGTAAAATTCTTCAAAT FFFFFFFFFFFFFFFFFFF,FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF NM:i:1  MD:Z:34G108     AS:i:138        XS:i:21 RG:Z:cfdna      FR:i:2
+A00250:28:H2HC3DSX2:1:2316:10547:25989:UMI_AAC_AGA      161     chr12   25377993        60      143M    =       25378462        612
+     CAATAATTTTTGTCAGAAAAATGCATTAAATGAATAACAGAATTTCTGTTGGCTTTCTGGGTATTGTCTTTCTTTAATGAGACCTTTCTCCAGAAATAAACACATCCTCAAAAAAATTCTGCCAAAGTAAAATTCTTCAAATA FFFFF:FFFFFFFFFFFFFFFFFFFFF:FF:FFFFFFFFFF,FFFFFFFFFFFF,:FFFFFFFFFFFFFFFFFFFF:FFFFFFFFFFFFFFFFFFF:FFF,!FF:F:F:F,FFF,F:FFFF,,:F,FFFF:FF:,:FF:F,:, NM:i:1  MD:Z:33G67A41   AS:i:133        XS:i:21 RG:Z:cfdna      FR:i:1  RR:i:5
+```
 2. the JSON report. A json file contains lots of statistical informations.
 3. the HTML report. A html file visualizes the information of the JSON.
 4. the plain text output.
