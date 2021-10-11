@@ -21,7 +21,20 @@ string BamUtil::getQName(const bam1_t *b) {
 }
 
 string BamUtil::getUMI(const bam1_t *b, const string& prefix) {
-    return getUMI(string(bam_get_qname(b)), prefix);
+    // if there is a MI tag, read the tag, otherwise read the qname 
+    const char umitag[2] = {'M', 'I'};
+    uint8_t* umidata = bam_aux_get(b, umitag);
+    if(!umidata) {
+        return getUMI(string(bam_get_qname(b)), prefix);
+    }
+    else {
+        const char* str = bam_aux2Z(umidata);
+        if(!str) {
+            return getUMI(string(bam_get_qname(b)), prefix);
+        }
+        string umistr = string(str);
+        return getUMI(umistr, prefix);
+    }
 }
 
 string BamUtil::getUMI(string qname, const string& prefix) {

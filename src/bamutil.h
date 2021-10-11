@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "util.h"
 #include "htslib/sam.h"
+#include "htslib/kstring.h"
 
 using namespace std;
 
