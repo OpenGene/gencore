@@ -128,36 +128,39 @@ void Pair::computeScore() {
                         mRightScore[r] = mOptions->scoreOfLowQualityMatch;
                     }
                     continue;
-                }
+                } else {
+                    // modify the Q Scores since the bases are mismatched
+                    lqual[l] = max(0, (int)lq - (int)rq);
+                    rqual[r] = max(0, (int)rq - (int)lq);
+                    if(lq >= mOptions->highQuality && rq >= mOptions->highQuality) {
+                        mLeftScore[l] = mOptions->scoreOfBothHighQualityMismatch;
+                        mRightScore[r] = mOptions->scoreOfBothHighQualityMismatch;
+                        continue;
+                    }
 
-                if(lq >= mOptions->highQuality && rq >= mOptions->highQuality) {
-                    mLeftScore[l] = mOptions->scoreOfBothHighQualityMismatch;
-                    mRightScore[r] = mOptions->scoreOfBothHighQualityMismatch;
-                    continue;
-                }
+                    if(lq <= mOptions->lowQuality && rq <= mOptions->lowQuality) {
+                        mLeftScore[l] = mOptions->scoreOfBothLowQualityMismatch;
+                        mRightScore[r] = mOptions->scoreOfBothLowQualityMismatch;
+                        continue;
+                    }
 
-                if(lq <= mOptions->lowQuality && rq <= mOptions->lowQuality) {
-                    mLeftScore[l] = mOptions->scoreOfBothLowQualityMismatch;
-                    mRightScore[r] = mOptions->scoreOfBothLowQualityMismatch;
-                    continue;
-                }
+                    if(lq > mOptions->lowQuality && lq < mOptions->highQuality && rq > mOptions->lowQuality && rq < mOptions->highQuality) {
+                        mLeftScore[l] = mOptions->scoreOfBothModerateQualityMismatch;
+                        mRightScore[r] = mOptions->scoreOfBothModerateQualityMismatch;
+                        continue;
+                    }
 
-                if(lq > mOptions->lowQuality && lq < mOptions->highQuality && rq > mOptions->lowQuality && rq < mOptions->highQuality) {
-                    mLeftScore[l] = mOptions->scoreOfBothModerateQualityMismatch;
-                    mRightScore[r] = mOptions->scoreOfBothModerateQualityMismatch;
-                    continue;
-                }
+                    if(lq >= mOptions->highQuality && rq <= mOptions->lowQuality) {
+                        mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchHighQuality;
+                        mRightScore[r] = mOptions->scoreOfUnbalancedMismatchLowQuality;
+                        continue;
+                    }
 
-                if(lq >= mOptions->highQuality && rq <= mOptions->lowQuality) {
-                    mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchHighQuality;
-                    mRightScore[r] = mOptions->scoreOfUnbalancedMismatchLowQuality;
-                    continue;
-                }
-
-                if(lq <= mOptions->lowQuality && rq >= mOptions->highQuality) {
-                    mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchLowQuality;
-                    mRightScore[r] = mOptions->scoreOfUnbalancedMismatchHighQuality;
-                    continue;
+                    if(lq <= mOptions->lowQuality && rq >= mOptions->highQuality) {
+                        mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchLowQuality;
+                        mRightScore[r] = mOptions->scoreOfUnbalancedMismatchHighQuality;
+                        continue;
+                    }
                 }
             }
         }

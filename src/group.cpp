@@ -463,6 +463,9 @@ int Group::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& sc
                 needToCheckRef = true;
         }
 
+        if(topScore < mOptions->scoreOfLowQualityMatch || topQual <= mOptions->lowQuality)
+            needToCheckRef = true;
+
         // integrate reference if it's possible
         if(needToCheckRef && refbase!=0) {
             uint8_t refbase4bit = BamUtil::base2fourbits(refbase);
