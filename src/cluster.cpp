@@ -219,7 +219,7 @@ int Cluster::duplexMergeBam(bam1_t* b1, bam1_t* b2) {
             base2 = BamUtil::fourbits2base(seq2[i/2] & 0xF);
         } else {
             base1 = BamUtil::fourbits2base((seq1[i/2]>>4) & 0xF);
-            base2 = BamUtil::fourbits2base((seq1[i/2]>>4) & 0xF);
+            base2 = BamUtil::fourbits2base((seq2[i/2]>>4) & 0xF);
         }
         if(base1 != base2) {
             diff++;
