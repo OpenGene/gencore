@@ -175,10 +175,11 @@ gencore -i in.bam -o out.bam -r hg19.fa -s 1
 ```
 gencore -i in.bam -o out.bam -r hg19.fa -s 1 --score_threshold=9
 ```
-If you want to obtain fewer but ultra clean data, you can enable the `duplex_only` option, and increase the `supporting_reads` and the `ratio_threshold`:
+If you want to obtain fewer but ultra clean data, and your data has UMI, you can enable the `duplex_only` option, and increase the `supporting_reads` and the `ratio_threshold`:
 ```
 gencore -i in.bam -o out.bam -r hg19.fa --duplex_only -s 3 --ratio_threshold=0.9
 ```
+Please note that only UMI-integrated paired-end data can be used to generate duplex consensuses sequences.
 
 # UMI format
 `gencore` supports calling consensus reads with or without UMI. Although UMI is not required, it is strongly recommended. If your FASTQ data has UMI integrated, you can use [fastp](https://github.com/OpenGene/fastp) to shift the UMI to read query names.  
