@@ -173,11 +173,11 @@ gencore -i in.bam -o out.bam -r hg19.fa -s 1
 ```
 (Recommanded) If you want to keep all the DNA fragments, and for each output read you want to discard all the low quality unoverlapped mutations to obtain a relative clean data (recommended for dup-rate < 50%):
 ```
-gencore -i in.bam -o out.bam -r hg19.fa -s 1 --score_threshold=8
+gencore -i in.bam -o out.bam -r hg19.fa -s 1 --score_threshold=9
 ```
-If you want to obtain fewer but ultra clean data, you can both increase the `supporting_reads` and the `ratio_threshold`:
+If you want to obtain fewer but ultra clean data, you can enable the `duplex_only` option, and increase the `supporting_reads` and the `ratio_threshold`:
 ```
-gencore -i in.bam -o out.bam -r hg19.fa -s 3 --ratio_threshold=0.9
+gencore -i in.bam -o out.bam -r hg19.fa --duplex_only -s 3 --ratio_threshold=0.9
 ```
 
 # UMI format
