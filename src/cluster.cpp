@@ -116,7 +116,7 @@ vector<Pair*> Cluster::clusterByUMI(int umiDiffThreshold, Stats* preStats, Stats
     vector<Pair*> resultConsensusPairs;
     int singleConsesusCount = 0;
     int duplexConsensusCount = 0;
-    if(hasUMI) {
+    if(hasUMI && !mOptions->disableDuplex) {
         // make duplex consensus read pairs
         while(singleConsensusPairs.size() > 0) {
             Pair* p1 = singleConsensusPairs.back();

@@ -33,6 +33,7 @@ int main(int argc, char* argv[]){
     cmd.add<string>("ref", 'r', "reference fasta file name (should be an uncompressed .fa/.fasta file)", true, "");
     cmd.add<string>("bed", 'b', "bed file to specify the capturing region, none by default", false, "");
     cmd.add("duplex_only", 'x', "only output duplex consensus sequences, which means single stranded consensus sequences will be discarded.");
+    cmd.add("no_duplex", 0, "don't merge single stranded consensus sequences to duplex consensus sequences.");
     
     // UMI
     cmd.add<string>("umi_prefix", 'u', "the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats.", false, "auto");
@@ -76,6 +77,10 @@ int main(int argc, char* argv[]){
     opt.duplexMismatchThreshold = cmd.get<int>("duplex_diff_threshold");
     opt.debug = cmd.exist("debug");
     opt.duplexOnly = cmd.exist("duplex_only");
+    opt.disableDuplex = cmd.exist("no_duplex");
+    if(opt.duplexOnly && opt.disableDuplex) {
+        error_exit("You cannot enable both duplex_only and no_duplex");
+    }
 
     // reporting
     opt.jsonFile = cmd.get<string>("json");

@@ -200,6 +200,7 @@ options:
   -r, --ref                      reference fasta file name (should be an uncompressed .fa/.fasta file) (string)
   -b, --bed                      bed file to specify the capturing region, none by default (string [=])
   -x, --duplex_only              only output duplex consensus sequences, which means single stranded consensus sequences will be discarded.
+      --no_duplex                don't merge single stranded consensus sequences to duplex consensus sequences.
   -u, --umi_prefix               the prefix for UMI, if it has. None by default. Check the README for the defails of UMI formats. (string [=auto])
   -s, --supporting_reads         only output consensus reads/pairs that merged by >= <supporting_reads> reads/pairs. The valud should be 1~10, and the default value is 1. (int [=1])
   -a, --ratio_threshold          if the ratio of the major base in a cluster is less than <ratio_threshold>, it will be further compared to the reference. The valud should be 0.5~1.0, and the default value is 0.8 (double [=0.8])

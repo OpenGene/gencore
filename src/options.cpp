@@ -36,6 +36,7 @@ Options::Options(){
     coverageStep = 10000;
 
     duplexOnly = false;
+    disableDuplex = false;
 }
 
 bool Options::validate() {

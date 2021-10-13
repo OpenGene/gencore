@@ -57,6 +57,7 @@ public:
     int bedCoverageStep;
 
     bool duplexOnly;
+    bool disableDuplex;
 };
 
 #endif
