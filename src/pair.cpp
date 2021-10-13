@@ -67,18 +67,36 @@ void Pair::writeSscsDcsTagBam(bam1_t* b) {
     }
 }
 
+void Pair::assignNonOverlappedScores(uint8_t* qual, int start, int end, char* scores) {
+    for(int i=start;i<end;i++) {
+        uint8_t q = qual[i];
+        scores[i] = qual2score(q);
+    }
+}
+
+char Pair::qual2score(uint8_t q) {
+    if(mOptions->highQuality <= q)
+        return mOptions->scoreOfNotOverlappedHighQual;
+    else if(mOptions->moderateQuality <= q)
+        return mOptions->scoreOfNotOverlappedModerateQual;
+    else if(mOptions->lowQuality <= q)
+        return mOptions->scoreOfNotOverlappedLowQual;
+    else
+        return mOptions->scoreOfNotOverlappedBadQual;
+}
+
 void Pair::computeScore() {
     if(mLeft) {
         if(mLeftScore == NULL) {
             mLeftScore = new char[mLeft->core.l_qseq];
-            memset(mLeftScore, mOptions->scoreOfNotOverlapped, mLeft->core.l_qseq);
+            memset(mLeftScore, mOptions->scoreOfNotOverlappedModerateQual, mLeft->core.l_qseq);
         }
     }
 
     if(mRight) {
         if(mRightScore == NULL) {
             mRightScore = new char[mRight->core.l_qseq];
-            memset(mRightScore, mOptions->scoreOfNotOverlapped, mRight->core.l_qseq);
+            memset(mRightScore, mOptions->scoreOfNotOverlappedModerateQual, mRight->core.l_qseq);
         }
     }
 
@@ -103,6 +121,14 @@ void Pair::computeScore() {
             uint8_t* rseq = bam_get_seq(mRight);
             uint8_t* lqual = bam_get_qual(mLeft);
             uint8_t* rqual = bam_get_qual(mRight);
+            if(mLeft) {
+                assignNonOverlappedScores(lqual, 0, min(mLeft->core.l_qseq, leftStart), mLeftScore);
+                assignNonOverlappedScores(lqual, max(0, leftStart+cmpLen), mLeft->core.l_qseq, mLeftScore);
+            }
+            if(mRight) {
+                assignNonOverlappedScores(rqual, 0, min(mRight->core.l_qseq, rightStart), mRightScore);
+                assignNonOverlappedScores(rqual, max(0, rightStart+cmpLen), mRight->core.l_qseq, mRightScore);
+            }
             for(int i=0; i<cmpLen; i++) {
                 int l = leftStart + i;
                 int r = rightStart + i;
@@ -119,47 +145,25 @@ void Pair::computeScore() {
                 else
                     rbase = (rseq[r/2]>>4) & 0xF;
 
+                // matched pair, score += 4
                 if(lbase == rbase) {
-                    if(lq + rq >= mOptions->moderateQuality * 2) {
-                        mLeftScore[l] = mOptions->scoreOfHighQualityMatch;
-                        mRightScore[r] = mOptions->scoreOfHighQualityMatch;
-                    } else {
-                        mLeftScore[l] = mOptions->scoreOfLowQualityMatch;
-                        mRightScore[r] = mOptions->scoreOfLowQualityMatch;
-                    }
+                    uint8_t q = (lq + rq) / 2;
+                    char score = qual2score(q) + 4;
+                    mLeftScore[l] = score;
+                    mRightScore[r] = score;
                     continue;
                 } else {
                     // modify the Q Scores since the bases are mismatched
+                    // In the overlapped region, if a base and its pair are mismatched, its quality score will be adjusted to: max(0, this_qual - pair_qual)
                     lqual[l] = max(0, (int)lq - (int)rq);
                     rqual[r] = max(0, (int)rq - (int)lq);
-                    if(lq >= mOptions->highQuality && rq >= mOptions->highQuality) {
-                        mLeftScore[l] = mOptions->scoreOfBothHighQualityMismatch;
-                        mRightScore[r] = mOptions->scoreOfBothHighQualityMismatch;
-                        continue;
-                    }
-
-                    if(lq <= mOptions->lowQuality && rq <= mOptions->lowQuality) {
-                        mLeftScore[l] = mOptions->scoreOfBothLowQualityMismatch;
-                        mRightScore[r] = mOptions->scoreOfBothLowQualityMismatch;
-                        continue;
-                    }
-
-                    if(lq > mOptions->lowQuality && lq < mOptions->highQuality && rq > mOptions->lowQuality && rq < mOptions->highQuality) {
-                        mLeftScore[l] = mOptions->scoreOfBothModerateQualityMismatch;
-                        mRightScore[r] = mOptions->scoreOfBothModerateQualityMismatch;
-                        continue;
-                    }
-
-                    if(lq >= mOptions->highQuality && rq <= mOptions->lowQuality) {
-                        mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchHighQuality;
-                        mRightScore[r] = mOptions->scoreOfUnbalancedMismatchLowQuality;
-                        continue;
-                    }
-
-                    if(lq <= mOptions->lowQuality && rq >= mOptions->highQuality) {
-                        mLeftScore[l] = mOptions->scoreOfUnbalancedMismatchLowQuality;
-                        mRightScore[r] = mOptions->scoreOfUnbalancedMismatchHighQuality;
-                        continue;
+                    uint8_t q = 0;
+                    if(lq >= rq ) {
+                        mLeftScore[l] = qual2score(lq - rq) - 3;
+                        mRightScore[r] = 0;
+                    } else {
+                        mLeftScore[l] = 0;
+                        mRightScore[r] = qual2score(rq - lq) -3;
                     }
                 }
             }

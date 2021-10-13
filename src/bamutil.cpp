@@ -17,7 +17,7 @@ void BamUtil::dump(bam1_t *b) {
 }
 
 string BamUtil::getQName(const bam1_t *b) {
-    return string(bam_get_qname(b));
+    return string(bam_get_qname(b), b->core.l_qname);
 }
 
 string BamUtil::getUMI(const bam1_t *b, const string& prefix) {

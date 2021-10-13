@@ -43,6 +43,8 @@ public:
 private:
     void computeScore();
     void writeSscsDcsTagBam(bam1_t* b);
+    void assignNonOverlappedScores(uint8_t* qual, int start, int end, char* scores);
+    char qual2score(uint8_t q);
 
 public:
     bam1_t *mLeft;

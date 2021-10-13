@@ -45,14 +45,10 @@ public:
     int moderateQuality;
     int lowQuality;
     // scores for PE consistence check
-    char scoreOfNotOverlapped;
-    char scoreOfHighQualityMatch;
-    char scoreOfLowQualityMatch;
-    char scoreOfBothHighQualityMismatch;
-    char scoreOfBothModerateQualityMismatch;
-    char scoreOfBothLowQualityMismatch;
-    char scoreOfUnbalancedMismatchHighQuality;
-    char scoreOfUnbalancedMismatchLowQuality;
+    char scoreOfNotOverlappedHighQual;
+    char scoreOfNotOverlappedModerateQual;
+    char scoreOfNotOverlappedLowQual;
+    char scoreOfNotOverlappedBadQual;
 
     // threshold for skipping low complexity cluster
     int skipLowComplexityClusterThreshold;

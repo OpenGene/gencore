@@ -22,16 +22,12 @@ Options::Options(){
     moderateQuality = 20;
     lowQuality = 15;
 
-    scoreOfNotOverlapped = 6;
-    scoreOfHighQualityMatch = 8;
-    scoreOfLowQualityMatch = 7;
-    scoreOfBothHighQualityMismatch = 4;
-    scoreOfBothModerateQualityMismatch = 3;
-    scoreOfBothLowQualityMismatch = 2;
-    scoreOfUnbalancedMismatchHighQuality = 5;
-    scoreOfUnbalancedMismatchLowQuality = 1;
+    scoreOfNotOverlappedHighQual = 8;
+    scoreOfNotOverlappedModerateQual = 6;
+    scoreOfNotOverlappedLowQual = 4;
+    scoreOfNotOverlappedBadQual = 2;
 
-    baseScoreReq = scoreOfNotOverlapped;
+    baseScoreReq = scoreOfNotOverlappedModerateQual;
     skipLowComplexityClusterThreshold = 1000;
 
     reportTitle = "gencore report";

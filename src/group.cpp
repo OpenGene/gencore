@@ -463,7 +463,7 @@ int Group::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& sc
                 needToCheckRef = true;
         }
 
-        if(topScore < mOptions->scoreOfLowQualityMatch || topQual <= mOptions->lowQuality)
+        if(topScore < mOptions->baseScoreReq || topQual <= mOptions->lowQuality)
             needToCheckRef = true;
 
         // integrate reference if it's possible

@@ -140,14 +140,18 @@ important steps:
 
 | in overlapped region? | matched with its pair? | condition? | score for this base |
 | - | - | - | - |
-| NO | N/A | NO | 6 |
-| YES | YES | this_qual + pair_qual >= 2 * MODERATE_QUAL | 8 |
-| YES | YES | this_qual + pair_qual < 2 * MODERATE_QUAL | 7 |
-| YES | NO | this_qual >= HIGH_QUAL, pair_qual <= LOW_QUAL | 5 |
-| YES | NO | this_qual >= HIGH_QUAL, pair_qual >= HIGH_QUAL | 4 |
-| YES | NO | LOW_QUAL < this_qual < HIGH_QUAL, LOW_QUAL < pair_qual < HIGH_QUAL | 3 |
-| YES | NO | this_qual <= LOW_QUAL, pair_qual <= LOW_QUAL | 2 |
-| YES | NO | this_qual <= LOW_QUAL, pair_qual >= HIGH_QUAL | 1 |
+| NO | N/A | HIGH_QUAL <= this_qual | 8 |
+| NO | N/A | MODERATE_QUAL <= this_qual < HIGH_QUAL | 6 |
+| NO | N/A | LOW_QUAL <= this_qual < MODERATE_QUAL | 4 |
+| NO | N/A | this_qual < LOW_QUAL | 2 |
+| YES | YES | 2 * HIGH_QUAL <= this_qual + pair_qual | 12 |
+| YES | YES | 2 * MODERATE_QUAL <= this_qual + pair_qual < 2 * HIGH_QUAL | 10 |
+| YES | YES | 2 * LOW_QUAL <= this_qual + pair_qual < 2 * MODERATE_QUAL | 8 |
+| YES | YES | this_qual + pair_qual < 2 * LOW_QUAL | 6 |
+| YES | NO | HIGH_QUAL <= this_qual - pair_qual | 5 |
+| YES | NO | MODERATE_QUAL <= this_qual - pair_qual < HIGH_QUAL | 3 |
+| YES | NO | LOW_QUAL <= this_qual - pair_qual < MODERATE_QUAL | 1 |
+| YES | NO | this_qual - pair_qual < LOW_QUAL | 0 |
 
 In this table:
 * `this_qual` is the quality of this base
@@ -155,6 +159,8 @@ In this table:
 * `HIGH_QUAL` is the quality threshold that can be specified by `--high_qual`
 * `MODERATE_QUAL` is the quality threshold that can be specified by `--moderate_qual`
 * `LOW_QUAL` is the quality threshold that can be specified by `--low_qual`
+
+In the overlapped region, if a base and its pair are mismatched, its quality score will be adjusted to: `max(0, this_qual - pair_qual)`
 
 # command examples
 If you want to get very clean data, we can only keep the clusters with 2 or more supporting reads (recommended for ultra-deep sequencing with higher dup-rate):
