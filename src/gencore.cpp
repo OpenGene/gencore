@@ -326,7 +326,7 @@ void Gencore::addToProperCluster(bam1_t* b) {
     map<long, Cluster*>::iterator iter3;
     bool needBreak = false;
     // to mark the smallest tid in the set
-    int curProcessedTid = mBamHeader->n_targets;
+    int curProcessedTid = INT_MAX;
     int curProcessedPos = -1;
     int processedPos;
     for(iter1 = mProperClusters.begin(); iter1 != mProperClusters.end();) {
@@ -382,8 +382,10 @@ void Gencore::addToProperCluster(bam1_t* b) {
             iter1++;
         }
     }
-    mProcessedTid = curProcessedTid;
-    mProcessedPos = curProcessedPos;
+    if(curProcessedTid != INT_MAX) {
+        mProcessedTid = curProcessedTid;
+        mProcessedPos = curProcessedPos;
+    }
 }
 
 void Gencore::finishConsensus(map<int, map<int, map<long, Cluster*>>>& clusters) {
