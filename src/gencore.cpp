@@ -2,6 +2,7 @@
 #include "bamutil.h"
 #include "jsonreporter.h"
 #include "htmlreporter.h"
+#include <limits.h>
 
 Gencore::Gencore(Options *opt){
     mOptions = opt;
