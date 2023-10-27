@@ -395,7 +395,7 @@ int Group::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& sc
         uint8_t topBase=0;
         int topScore = -0x7FFFFFFF;
         for(uint8_t b=0; b<16; b++) {
-            if(baseScores[b] > topScore || (baseScores[b] == topScore && quals[b] > quals[topBase])) {
+            if(baseScores[b] > topScore || (baseScores[b] == topScore && quals[b] >= quals[topBase])) {
                 topScore = baseScores[b];
                 topBase = b;
             }
@@ -409,7 +409,7 @@ int Group::makeConsensus(vector<bam1_t* >& reads, bam1_t* out, vector<char*>& sc
         for(uint8_t b=0; b<16; b++) {
             if(b == topBase)
                 continue;
-            if(baseScores[b] > secScore || (baseScores[b] == secScore && quals[b] > quals[secBase])) {
+            if(baseScores[b] > secScore || (baseScores[b] == secScore && quals[b] >= quals[secBase])) {
                 secScore = baseScores[b];
                 secBase = b;
             }
